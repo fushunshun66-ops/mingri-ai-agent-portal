@@ -5,7 +5,9 @@ export interface AudioRecorderHandle {
   isSupported: boolean;
   partialText: string;
   error: string | null;
+  durationSec: number;
   start: () => Promise<void>;
   stop: () => Promise<string>;
   cancel: () => void;
+  dismissError: () => void;
 }

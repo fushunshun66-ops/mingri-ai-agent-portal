@@ -102,6 +102,12 @@ export function Composer({
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, [value]);
 
+  useEffect(() => {
+    if (voiceRecorder?.partialText) {
+      onChange(voiceRecorder.partialText);
+    }
+  }, [voiceRecorder?.partialText]);
+
   const onTextareaKey = (e: React.KeyboardEvent) => {
     if (showAgentPicker) {
       if (e.key === "ArrowDown") {
@@ -155,6 +161,12 @@ export function Composer({
 
   const canSend = hasComposerPayload(value, chips, attachments.length > 0 || localFiles.length > 0);
 
+  const formatDuration = (sec: number): string => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
+
   const pickQuickPrompt = (text: string) => {
     onChange(text);
     requestAnimationFrame(() => {
@@ -176,7 +188,7 @@ export function Composer({
         />
       )}
       <div
-        className={`composer ${isHome ? "composer-home" : ""} ${dragOver ? "drag-over" : ""}`}
+        className={`composer ${isHome ? "composer-home" : ""} ${dragOver ? "drag-over" : ""} ${voiceRecorder?.status === "recording" ? "composer-recording" : ""}`}
         onDragEnter={handleDragEnter}
         onDragOver={(e) => canAttach && e.preventDefault()}
         onDragLeave={handleDragLeave}
@@ -253,17 +265,16 @@ export function Composer({
             ))}
           </div>
         )}
-        {voiceRecorder?.partialText && (
-          <div className="voice-interim" aria-live="polite">
-            {voiceRecorder.partialText}
-          </div>
-        )}
         {voiceRecorder?.error && (
-          <div className="voice-error" role="alert">{voiceRecorder.error}</div>
+          <div className="voice-error" role="alert">
+            <span>{voiceRecorder.error}</span>
+            <button className="voice-error-close" onClick={() => voiceRecorder.dismissError()} aria-label="关闭">✕</button>
+          </div>
         )}
         <textarea
           ref={textareaRef}
           value={value}
+          readOnly={voiceRecorder?.status === "recording"}
           aria-label="消息输入"
           placeholder={placeholder}
           onChange={(e) => {
@@ -280,18 +291,34 @@ export function Composer({
               <button
                 type="button"
                 className={`tool-btn ${voiceRecorder.status === "recording" ? "tool-btn-recording" : ""}`}
-                title={voiceRecorder.status === "recording" ? "停止录音" : "语音输入"}
+                title={voiceRecorder.status === "recording" ? `停止录音 · ${voiceRecorder.durationSec}s` : "语音输入"}
                 disabled={voiceRecorder.status === "requesting" || voiceRecorder.status === "error" || sending || uploading}
                 onClick={async () => {
                   if (voiceRecorder.status === "recording") {
-                    const text = await voiceRecorder.stop();
-                    if (text && onVoiceText) onVoiceText(text);
+                    const spoken = await voiceRecorder.stop();
+                    if (spoken && onVoiceText) onVoiceText(spoken);
+                    requestAnimationFrame(() => {
+                      const el = document.querySelector(".composer textarea") as HTMLTextAreaElement | null;
+                      el?.focus();
+                      const len = el?.value.length ?? 0;
+                      el?.setSelectionRange(len, len);
+                    });
                   } else {
                     voiceRecorder.start();
                   }
                 }}
               >
-                <IconMic />
+                {voiceRecorder.status === "recording" ? `● ${formatDuration(voiceRecorder.durationSec)}` : <IconMic />}
+              </button>
+            )}
+            {voiceRecorder?.isSupported && voiceRecorder.status === "recording" && (
+              <button
+                type="button"
+                className="tool-btn tool-btn-cancel"
+                title="取消录音"
+                onClick={() => voiceRecorder.cancel()}
+              >
+                取消
               </button>
             )}
             {canAttach && (

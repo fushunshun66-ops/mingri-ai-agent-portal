@@ -36,7 +36,7 @@ export default function App() {
       onHomeMentionFlow={chat.setHomeMentionFlowKey}
       voiceRecorder={voice}
       onVoiceText={(text) => {
-        chat.setInput((prev) => (prev ? `${prev} ${text}` : text).trim());
+        chat.setInput(text);
       }}
     />
   );

@@ -12,6 +12,7 @@ const HANDSHAKE_MSG = JSON.stringify({
   audio_fs: 16000,
 });
 const TIMEOUT_MS = 60000;
+const SENSEVOICE_TAG_RE = /<\|[^|]+\|>/g;
 
 export function createAsrProxy(clientWs, asrConfig) {
   let asrWs = null;
@@ -61,6 +62,9 @@ export function createAsrProxy(clientWs, asrConfig) {
       resetTimeout();
       try {
         const msg = JSON.parse(data.toString());
+        if (msg.text) {
+          msg.text = msg.text.replace(SENSEVOICE_TAG_RE, "").trim();
+        }
         sendToClient(msg);
       } catch (_) {
         console.debug("[asr-proxy] 非 JSON 帧:", data.toString().slice(0, 100));

@@ -5,6 +5,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
   const [status, setStatus] = useState<RecorderStatus>("idle");
   const [partialText, setPartialText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [durationSec, setDurationSec] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<ScriptProcessorNode | null>(null);
@@ -12,6 +13,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
   const finalRef = useRef("");
   const partialRef = useRef("");
   const rafRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statusRef = useRef<RecorderStatus>("idle");
 
   const isSupported = !!(navigator.mediaDevices && window.AudioContext);
@@ -45,6 +47,10 @@ export function useAudioRecorder(): AudioRecorderHandle {
       wsRef.current.close();
       wsRef.current = null;
     }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
 
   const start = useCallback(async () => {
@@ -52,6 +58,10 @@ export function useAudioRecorder(): AudioRecorderHandle {
     setError(null);
     setStatus("requesting");
     statusRef.current = "requesting";
+    setDurationSec(0);
+    timerRef.current = setInterval(() => {
+      setDurationSec((s) => s + 1);
+    }, 1000);
     setPartialText("");
     partialRef.current = "";
     finalRef.current = "";
@@ -91,8 +101,13 @@ export function useAudioRecorder(): AudioRecorderHandle {
             return;
           }
           if (msg.text) {
+            const isOffline = /offline/i.test(msg.mode || "");
             if (msg.is_final) {
-              appendFinal(msg.text);
+              if (isOffline) {
+                finalRef.current = msg.text;
+              } else {
+                appendFinal(msg.text);
+              }
               partialRef.current = "";
               flushPartial();
             } else {
@@ -139,6 +154,8 @@ export function useAudioRecorder(): AudioRecorderHandle {
     cleanup();
     setStatus("idle");
     statusRef.current = "idle";
+    setPartialText("");
+    partialRef.current = "";
     const result = finalRef.current || partialRef.current;
     return result;
   }, [status, cleanup]);
@@ -149,11 +166,18 @@ export function useAudioRecorder(): AudioRecorderHandle {
     statusRef.current = "idle";
     setPartialText("");
     setError(null);
+    setDurationSec(0);
     partialRef.current = "";
     finalRef.current = "";
   }, [cleanup]);
 
+  const dismissError = useCallback(() => {
+    setError(null);
+    setStatus("idle");
+    statusRef.current = "idle";
+  }, []);
+
   useEffect(() => () => { cleanup(); }, [cleanup]);
 
-  return { status, isSupported, partialText, error, start, stop, cancel };
+  return { status, isSupported, partialText, error, durationSec, start, stop, cancel, dismissError };
 }
