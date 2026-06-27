@@ -1,0 +1,36 @@
+{
+  "baseUrl": "https://aiagentforce.marketingforce.com/api",
+  "token": "5d37fa56b44d65b1",
+  "mode": "live",
+  "requestTimeoutMs": 120000,
+  "flows": {
+    "sales_order": {
+      "name": "智能销售订单生成",
+      "agentSn": "agent-17a780474ab44af18422915",
+      "description": "口语下单：抽取客户/商品/数量/单价/交期，生成销售订单",
+      "inputKey": "Query",
+      "acceptsFile": false,
+      "placeholder": "例如：给上海华塑下500吨万华聚氯乙烯七型，单价6850，下周一交货"
+    },
+    "shipment": {
+      "name": "智能发货申请单生成",
+      "agentSn": "agent-5461ad39b66f499fa7e0a56",
+      "description": "提货函/文字识别，匹配待发货订单，生成发货申请单",
+      "inputKey": "input",
+      "fileInputKey": "file",
+      "imageInputKey": "image",
+      "acceptsFile": true,
+      "placeholder": "粘贴提货函内容，或上传提货函图片/文档（客户、车牌、数量、提货日期）"
+    },
+    "contract_review": {
+      "name": "合同附件智能评审",
+      "agentSn": "agent-e7a64d03635e436a90bc682",
+      "description": "上传合同附件，与 ERP 订单比对，输出风险评审",
+      "inputKey": "input",
+      "fileInputKey": "file",
+      "imageInputKey": "image",
+      "acceptsFile": true,
+      "placeholder": "上传合同附件后，输入需要评审的订单号或说明"
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "sales_order": {
+    "title": "销售订单草稿",
+    "matchKeys": ["客户名称", "商品名称", "商品列表", "数量"],
+    "deepMatch": true,
+    "fieldOrder": ["客户名称", "商品名称", "数量", "单价", "总金额", "交付日期"],
+    "labels": {
+      "客户名称": "客户",
+      "交付日期": "交期"
+    },
+    "widgets": {
+      "交付日期": "date",
+      "数量": "number",
+      "单价": "currency",
+      "总金额": "currency"
+    },
+    "unwrapPaths": ["订单信息", "金额信息", "基本信息"],
+    "listSections": [
+      {
+        "keys": ["商品列表", "产品列表", "订单明细", "items"],
+        "title": "商品明细",
+        "columnOrder": ["商品名称", "数量", "单价", "小计金额"],
+        "fieldMap": {
+          "商品": "商品名称",
+          "productName": "商品名称"
+        }
+      },
+      {
+        "keys": ["费用明细", "附加费用"],
+        "title": "费用明细",
+        "columnOrder": ["费用项", "金额"]
+      },
+      {
+        "keys": ["风险提示"],
+        "title": "风险提示",
+        "columnOrder": ["等级", "说明"]
+      }
+    ],
+    "actions": [
+      { "id": "confirm", "label": "确认无误", "message": "确认无误，请提交订单" },
+      { "id": "edit_qty", "label": "修改数量", "message": "我想修改数量" },
+      { "id": "edit_date", "label": "修改交期", "message": "我想修改交期" }
+    ]
+  },
+  "shipment": {
+    "title": "发货申请单",
+    "matchKeys": [
+      "单号",
+      "客户编号",
+      "收货单位名称",
+      "收货单位详细地址",
+      "物料",
+      "仓库属地",
+      "发货数量",
+      "order_info",
+      "items"
+    ],
+    "deepMatch": true,
+    "fieldOrder": [
+      "单号",
+      "日期",
+      "客户编号",
+      "收货单位名称",
+      "收货单位详细地址",
+      "总金额",
+      "业务员",
+      "收货人",
+      "电话",
+      "运输方式",
+      "物流_快递"
+    ],
+    "labels": {
+      "单号": "发货单号",
+      "收货单位名称": "收货单位",
+      "收货单位详细地址": "收货地址"
+    },
+    "widgets": {
+      "日期": "date",
+      "要求到货时间": "date",
+      "总金额": "currency"
+    },
+    "unwrapPaths": ["order_info", "基本信息", "订单信息"],
+    "listSections": [
+      {
+        "keys": ["items", "发货明细", "明细", "var_shipment"],
+        "title": "发货明细",
+        "columnOrder": ["物料", "仓库属地", "发货数量", "单价", "要求到货时间", "收货地址", "备注"]
+      }
+    ],
+    "actions": [
+      { "id": "confirm", "label": "确认提交", "message": "确认无误，请提交发货申请" }
+    ]
+  },
+  "contract_review": {
+    "title": "合同附件智能评审",
+    "matchKeys": [
+      "合同名称",
+      "客户名称",
+      "合同编号",
+      "审核规则名称",
+      "规则描述",
+      "原始数据",
+      "审核结果",
+      "基本信息",
+      "审核内容",
+      "审核总结"
+    ],
+    "deepMatch": true,
+    "fieldOrder": ["合同名称", "客户名称", "合同编号", "总审核项数", "通过项数", "不通过项数"],
+    "labels": {
+      "合同名称": "合同名称",
+      "客户名称": "客户名称",
+      "合同编号": "合同编号"
+    },
+    "unwrapPaths": ["基本信息", "审核总结"],
+    "listSections": [
+      {
+        "keys": ["审核内容", "评审项", "审核项", "var_risk"],
+        "title": "审核内容",
+        "columnOrder": [
+          "审核规则名称",
+          "审核规则说明",
+          "规则描述",
+          "原始数据比对",
+          "原始数据",
+          "字段",
+          "合同值",
+          "ERP值",
+          "审核结果",
+          "结论",
+          "风险等级"
+        ]
+      }
+    ],
+    "actions": [
+      { "id": "confirm", "label": "确认无误", "message": "合同评审结果已确认" },
+      { "id": "detail", "label": "查看详情", "message": "请展开说明不通过项" }
+    ]
+  },
+  "generic": {
+    "title": "结构化表单",
+    "matchKeys": [],
+    "deepMatch": true,
+    "fieldOrder": [],
+    "labels": {},
+    "widgets": {},
+    "unwrapPaths": [],
+    "listSections": [],
+    "actions": [{ "id": "confirm", "label": "确认", "message": "确认无误" }]
+  }
+}

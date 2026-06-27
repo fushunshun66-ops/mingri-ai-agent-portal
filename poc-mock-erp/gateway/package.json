@@ -1,0 +1,16 @@
+{
+  "name": "poc-chat-gateway",
+  "version": "1.0.0",
+  "description": "统一智能体对话窗口 BFF：代理迈富时智能体中台 + 会话/消息/Trace 入库",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "ws": "^8.21.0"
+  }
+}
