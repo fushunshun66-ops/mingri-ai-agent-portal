@@ -1,6 +1,21 @@
 """agents 服务测试 fixtures"""
 
 import pytest_asyncio
+from unittest.mock import AsyncMock, MagicMock
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def mock_storage(monkeypatch):
+    """Mock MinIO 存储，避免测试时连接真实 MinIO"""
+    mock = MagicMock()
+    mock.upload = AsyncMock(return_value="icons/agents/mock-icon.png")
+    mock.get_url = AsyncMock(return_value="http://localhost:9000/agent-portal/icons/agents/mock-icon.png")
+
+    def mock_get_storage():
+        return mock
+
+    monkeypatch.setattr("common.storage.get_storage", mock_get_storage)
+    yield mock
 
 
 @pytest_asyncio.fixture

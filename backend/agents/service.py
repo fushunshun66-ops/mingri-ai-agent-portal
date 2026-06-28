@@ -297,3 +297,189 @@ async def get_reviews(
         .limit(page_size)
     )
     return result.scalars().all(), total
+
+
+# ── 收藏 ──
+async def toggle_favorite(
+    db: AsyncSession, user_id: uuid.UUID | str, agent_id: uuid.UUID | str, favorited: bool
+) -> AgentInstallation:
+    """收藏 / 取消收藏 Agent"""
+    uid = _to_uuid(user_id)
+    aid = _to_uuid(agent_id)
+    result = await db.execute(
+        select(AgentInstallation).where(
+            AgentInstallation.user_id == uid,
+            AgentInstallation.agent_id == aid,
+        )
+    )
+    install = result.scalar_one_or_none()
+    if not install:
+        from common.exceptions import ConflictException
+        raise ConflictException(message="请先安装该 Agent 再收藏")
+    install.is_favorited = favorited
+    await db.flush()
+    await db.refresh(install)
+    return install
+
+
+async def get_favorites(
+    db: AsyncSession, tenant_id: uuid.UUID | str, user_id: uuid.UUID | str
+) -> list[Agent]:
+    """获取收藏的 Agent 列表"""
+    tid = _to_uuid(tenant_id)
+    uid = _to_uuid(user_id)
+    subquery = (
+        select(AgentInstallation.agent_id)
+        .where(
+            AgentInstallation.user_id == uid,
+            AgentInstallation.is_favorited == True,
+        )
+        .subquery()
+    )
+    result = await db.execute(
+        select(Agent)
+        .options(selectinload(Agent.category))
+        .where(Agent.tenant_id == tid, Agent.id.in_(select(subquery.c.agent_id)))
+        .order_by(Agent.install_count.desc())
+    )
+    return result.scalars().all()
+
+
+# ── 推荐 ──
+async def get_recommended(
+    db: AsyncSession, tenant_id: uuid.UUID | str, user_id: uuid.UUID | str, limit: int = 20
+) -> list[Agent]:
+    """获取推荐 Agent 列表（热度排序，排除已安装）"""
+    tid = _to_uuid(tenant_id)
+    uid = _to_uuid(user_id)
+
+    # 获取已安装的 agent_id
+    installed_query = select(AgentInstallation.agent_id).where(
+        AgentInstallation.user_id == uid
+    )
+    installed_result = await db.execute(installed_query)
+    installed_ids = {row[0] for row in installed_result.fetchall()}
+
+    # 热度排序：install_count * 0.4 + rating_avg * 0.4 + review_count * 0.2
+    score_expr = (
+        Agent.install_count * 0.4
+        + func.coalesce(Agent.rating_avg, 0) * 0.4
+        + Agent.review_count * 0.2
+    )
+
+    conditions = [Agent.tenant_id == tid, Agent.status == "published"]
+    if installed_ids:
+        conditions.append(Agent.id.not_in(installed_ids))
+
+    result = await db.execute(
+        select(Agent)
+        .options(selectinload(Agent.category))
+        .where(and_(*conditions))
+        .order_by(score_expr.desc())
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+
+# ── 最近使用 ──
+async def get_recent(
+    db: AsyncSession, tenant_id: uuid.UUID | str, user_id: uuid.UUID | str, limit: int = 10
+) -> list[Agent]:
+    """获取最近使用的 Agent（基于 chat_sessions last_message_at）"""
+    from common.shared_models import ChatSession
+
+    tid = _to_uuid(tenant_id)
+    uid = _to_uuid(user_id)
+
+    # 子查询：获取用户最近活跃的 agent_id
+    recent_query = (
+        select(
+            ChatSession.agent_id,
+            func.max(ChatSession.last_message_at).label("latest"),
+        )
+        .where(
+            ChatSession.tenant_id == tid,
+            ChatSession.user_id == uid,
+            ChatSession.last_message_at.isnot(None),
+        )
+        .group_by(ChatSession.agent_id)
+        .order_by(func.max(ChatSession.last_message_at).desc())
+        .limit(limit)
+        .subquery()
+    )
+
+    result = await db.execute(
+        select(Agent)
+        .options(selectinload(Agent.category))
+        .join(recent_query, Agent.id == recent_query.c.agent_id)
+        .order_by(recent_query.c.latest.desc())
+    )
+    return result.scalars().all()
+
+
+# ── 图标上传 ──
+async def upload_agent_icon(
+    db: AsyncSession,
+    agent_id: uuid.UUID | str,
+    tenant_id: uuid.UUID | str,
+    file_data: bytes,
+    filename: str,
+    content_type: str,
+) -> Agent:
+    """上传 Agent 图标到 MinIO 并更新 icon_url"""
+    import os
+
+    from common.exceptions import AppException
+    from common.storage import ALLOWED_CONTENT_TYPES, ALLOWED_IMAGE_EXTENSIONS, MAX_UPLOAD_SIZE, get_storage
+
+    # 校验文件大小
+    if len(file_data) > MAX_UPLOAD_SIZE:
+        raise AppException(code=400, message="文件大小不能超过 2MB", error_code="FILE_TOO_LARGE")
+
+    # 校验文件类型（扩展名）
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise AppException(
+            code=400,
+            message=f"不支持的图片格式，支持: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}",
+            error_code="INVALID_FILE_TYPE",
+        )
+
+    # 校验 MIME 类型（防止伪造）
+    if content_type not in ALLOWED_CONTENT_TYPES:
+        raise AppException(
+            code=400,
+            message=f"不支持的图片类型，支持: {', '.join(ALLOWED_CONTENT_TYPES)}",
+            error_code="INVALID_CONTENT_TYPE",
+        )
+
+    agent = await get_agent(db, agent_id, tenant_id)
+
+    # 上传到 MinIO
+    object_name = f"icons/agents/{agent.id}{ext}"
+    storage = get_storage()
+    await storage.upload(file_data, object_name, content_type)
+
+    # 存储 object_name，读取时通过 get_url 动态生成预签名 URL
+    agent.icon_url = object_name
+    await db.flush()
+    await db.refresh(agent)
+    return agent
+
+
+async def resolve_icon_urls(agents: Agent | list[Agent]) -> None:
+    """将 Agent 的 icon_url 从 object_name 解析为预签名 URL。
+
+    原地修改 Agent 对象的 icon_url 字段。
+    对于没有图标的 Agent，跳过处理。
+    对于已经是完整 URL 的（以 http 开头），不重复生成。
+    """
+    from common.storage import get_storage
+
+    if isinstance(agents, Agent):
+        agents = [agents]
+
+    storage = get_storage()
+    for agent in agents:
+        if agent.icon_url and not agent.icon_url.startswith("http"):
+            agent.icon_url = await storage.get_url(agent.icon_url)

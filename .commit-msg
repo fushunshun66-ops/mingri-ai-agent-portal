@@ -1,0 +1,19 @@
+feat: 企业智能体统一门户平台 Phase 1 MVP 完整交付
+
+Phase 1（核心门户 + 用户认证 + Agent 模型）全部完成。
+
+架构设计：9 份文档（背景/方案/架构/模块/数据模型/适配层/API/部署/路线图）
+
+后端（FastAPI + SQLAlchemy 2.0 async + PostgreSQL）：
+- 5 个微服务（users/agents/adapters/chat/monitor）
+- 14 张数据库表 Schema + Alembic 迁移
+- JWT RS256 认证 + RBAC + 多租户 RLS
+- API Key AES-256-GCM 加密 + 审计日志
+- 56 测试全通过，覆盖率 94.04%
+
+前端（Vue 3 + TypeScript + Element Plus + Vite）：
+- 10 个页面 + 5 个组件
+- JWT 自动刷新 + 路由守卫 + XSS 防护
+- 21 测试全通过，TypeScript 零错误
+
+Docker Compose 一键部署

@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, Numeric, SmallInteger, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models import Base, TenantMixin, TimestampMixin, UUIDMixin
@@ -62,6 +62,7 @@ class AgentInstallation(Base, UUIDMixin, TenantMixin):
     installed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow
     )
+    is_favorited: Mapped[bool] = mapped_column(default=False)
 
     agent: Mapped["Agent"] = relationship(back_populates="installations")
 

@@ -20,8 +20,26 @@
         />
       </el-form-item>
 
-      <el-form-item label="图标 URL" prop="icon_url">
-        <el-input v-model="formData.icon_url" placeholder="可选，图标链接" />
+      <el-form-item label="图标" prop="icon_url">
+        <div class="icon-upload">
+          <el-input
+            v-model="formData.icon_url"
+            placeholder="图标 URL 地址"
+            class="icon-url-input"
+          />
+          <span class="icon-divider">或</span>
+          <el-upload
+            :auto-upload="false"
+            :show-file-list="false"
+            :on-change="handleFileChange"
+            accept="image/*"
+          >
+            <el-button>上传图标</el-button>
+          </el-upload>
+        </div>
+        <div v-if="selectedFile" class="file-hint">
+          已选择: {{ selectedFile.name }}
+        </div>
       </el-form-item>
 
       <el-row :gutter="16">
@@ -138,6 +156,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   submit: [data: AgentCreateRequest | AgentUpdateRequest]
+  iconFile: [file: File]
 }>()
 
 const isEdit = !!props.initialData
@@ -160,9 +179,17 @@ const platformConfig = reactive<Record<string, string>>(
 )
 
 const tags = ref<Tag[]>(props.initialData?.tags ?? [])
+const selectedFile = ref<File | null>(null)
 
 const rules: FormRules = {
   name: [{ required: true, message: '请输入 Agent 名称', trigger: 'blur' }],
+}
+
+function handleFileChange(uploadFile: { raw?: File }) {
+  if (uploadFile.raw) {
+    selectedFile.value = uploadFile.raw
+    emit('iconFile', uploadFile.raw)
+  }
 }
 
 async function handleSubmit() {
@@ -197,5 +224,28 @@ onMounted(fetchCategories)
 <style scoped>
 .agent-form {
   border-radius: 10px;
+}
+
+.icon-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.icon-url-input {
+  flex: 1;
+}
+
+.icon-divider {
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.file-hint {
+  font-size: 12px;
+  color: var(--primary-color);
+  margin-top: 4px;
 }
 </style>

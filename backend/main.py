@@ -19,6 +19,7 @@ from common.middleware import AuthMiddleware
 from users.router import router as users_router
 from agents.router import router as agents_router
 from adapters.router import router as adapters_router
+from chat.router import router as chat_router
 
 
 @asynccontextmanager
@@ -56,6 +57,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 app.include_router(users_router)
 app.include_router(agents_router)
 app.include_router(adapters_router)
+app.include_router(chat_router)
 
 
 @app.get("/health")

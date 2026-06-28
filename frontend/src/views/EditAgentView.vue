@@ -8,7 +8,7 @@
       <div v-if="loading" class="loading-area">
         <el-skeleton :rows="8" animated />
       </div>
-      <AgentForm v-else-if="agent" :initial-data="agent" @submit="handleUpdate" />
+      <AgentForm v-else-if="agent" :initial-data="agent" @submit="handleUpdate" @icon-file="handleIconFile" />
       <el-empty v-else description="Agent 不存在" />
     </div>
   </AppLayout>
@@ -29,6 +29,11 @@ const router = useRouter()
 
 const agent = ref<Agent | null>(null)
 const loading = ref(true)
+const iconFile = ref<File | null>(null)
+
+function handleIconFile(file: File) {
+  iconFile.value = file
+}
 
 async function fetchAgent() {
   try {
@@ -48,6 +53,14 @@ async function handleUpdate(data: AgentUpdateRequest) {
   try {
     const id = route.params.id as string
     await agentsApi.update(id, data)
+    // 如果有图标文件，上传图标
+    if (iconFile.value) {
+      try {
+        await agentsApi.uploadIcon(id, iconFile.value)
+      } catch {
+        // 图标上传失败不影响更新流程
+      }
+    }
     ElMessage.success('Agent 更新成功')
     router.push(`/agents/${id}`)
   } catch (err) {

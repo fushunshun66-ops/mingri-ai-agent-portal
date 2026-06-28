@@ -66,4 +66,36 @@ export const agentsApi = {
   getReviews(agentId: string, page = 1, pageSize = 20) {
     return client.get<ApiResponse<Review[]>>(`/agents/${agentId}/reviews`, { params: { page, page_size: pageSize } })
   },
+
+  /** 收藏 Agent */
+  favorite(id: string) {
+    return client.post<ApiResponse<null>>(`/agents/${id}/favorite`)
+  },
+
+  /** 取消收藏 Agent */
+  unfavorite(id: string) {
+    return client.delete<ApiResponse<null>>(`/agents/${id}/favorite`)
+  },
+
+  /** 获取收藏列表 */
+  getFavorites(page = 1, pageSize = 20) {
+    return client.get<ApiResponse<Agent[]>>('/agents/favorites', { params: { page, page_size: pageSize } })
+  },
+
+  /** 获取推荐 Agent */
+  getRecommended() {
+    return client.get<ApiResponse<Agent[]>>('/agents/recommended')
+  },
+
+  /** 获取最近使用 */
+  getRecent(limit = 20) {
+    return client.get<ApiResponse<Agent[]>>('/agents/recent', { params: { limit } })
+  },
+
+  /** 上传图标 */
+  uploadIcon(id: string, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return client.post<ApiResponse<{ icon_url: string }>>(`/agents/${id}/icon`, formData)
+  },
 }

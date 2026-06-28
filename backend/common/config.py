@@ -1,5 +1,6 @@
 """全局配置，基于 pydantic-settings 从环境变量 /.env 加载"""
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -63,8 +64,36 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = "text"
 
+    # ── MinIO ──
+    minio_endpoint: str = "localhost:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_bucket: str = "agent-portal"
+    minio_secure: bool = False
+
     # ── CORS ──
     cors_origins: str = "http://localhost:3000,http://localhost:5173"
+
+    @field_validator("app_secret_key")
+    @classmethod
+    def validate_app_secret_key(cls, v: str, info) -> str:
+        if info.data.get("app_env") == "production" and v == "change-me-to-a-random-secret-key-at-least-32-chars":
+            raise ValueError("生产环境必须设置 APP_SECRET_KEY，不得使用默认值")
+        return v
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def validate_jwt_secret_key(cls, v: str, info) -> str:
+        if info.data.get("app_env") == "production" and "dev-secret" in v.lower():
+            raise ValueError("生产环境必须设置强 JWT_SECRET_KEY，不得使用开发默认值")
+        return v
+
+    @field_validator("encryption_key")
+    @classmethod
+    def validate_encryption_key(cls, v: str, info) -> str:
+        if info.data.get("app_env") == "production" and v == "0123456789abcdef0123456789abcdef":
+            raise ValueError("生产环境必须设置强 ENCRYPTION_KEY，不得使用默认值")
+        return v
 
     model_config = {
         "env_file": ".env",

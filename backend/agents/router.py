@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agents.schemas import (
@@ -20,13 +20,19 @@ from agents.service import (
     delete_agent,
     get_agent,
     get_categories,
+    get_favorites,
     get_my_agents,
+    get_recent,
+    get_recommended,
     get_reviews,
     install_agent,
     list_agents,
+    resolve_icon_urls,
     seed_default_categories,
+    toggle_favorite,
     uninstall_agent,
     update_agent,
+    upload_agent_icon,
 )
 from common.database import get_db
 from common.dependencies import get_current_user
@@ -52,6 +58,7 @@ async def create_agent_endpoint(
 ):
     await seed_default_categories(db)
     agent = await create_agent(db, current_user["tenant_id"], current_user["id"], req)
+    await resolve_icon_urls(agent)
     return ok(
         data=AgentResponse.model_validate(agent).model_dump(mode="json"),
         message="Agent 创建成功",
@@ -84,6 +91,7 @@ async def list_agents_endpoint(
         sort_order=sort_order,
     )
     agents, total = await list_agents(db, current_user["tenant_id"], query)
+    await resolve_icon_urls(agents)
     return paginated_ok(
         data=[AgentResponse.model_validate(a).model_dump(mode="json") for a in agents],
         total=total,
@@ -102,11 +110,48 @@ async def my_agents_endpoint(
     agents, total = await get_my_agents(
         db, current_user["tenant_id"], current_user["id"], page, page_size
     )
+    await resolve_icon_urls(agents)
     return paginated_ok(
         data=[AgentResponse.model_validate(a).model_dump(mode="json") for a in agents],
         total=total,
         page=page,
         page_size=page_size,
+    )
+
+
+@router.get("/agents/favorites")
+async def get_favorites_endpoint(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    agents = await get_favorites(db, current_user["tenant_id"], current_user["id"])
+    await resolve_icon_urls(agents)
+    return ok(
+        data=[AgentResponse.model_validate(a).model_dump(mode="json") for a in agents],
+    )
+
+
+@router.get("/agents/recommended")
+async def recommended_endpoint(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    agents = await get_recommended(db, current_user["tenant_id"], current_user["id"])
+    await resolve_icon_urls(agents)
+    return ok(
+        data=[AgentResponse.model_validate(a).model_dump(mode="json") for a in agents],
+    )
+
+
+@router.get("/agents/recent")
+async def recent_endpoint(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    agents = await get_recent(db, current_user["tenant_id"], current_user["id"])
+    await resolve_icon_urls(agents)
+    return ok(
+        data=[AgentResponse.model_validate(a).model_dump(mode="json") for a in agents],
     )
 
 
@@ -117,6 +162,7 @@ async def get_agent_endpoint(
     current_user: dict = Depends(get_current_user),
 ):
     agent = await get_agent(db, agent_id, current_user["tenant_id"])
+    await resolve_icon_urls(agent)
     return ok(data=AgentResponse.model_validate(agent).model_dump(mode="json"))
 
 
@@ -128,6 +174,7 @@ async def update_agent_endpoint(
     current_user: dict = Depends(get_current_user),
 ):
     agent = await update_agent(db, agent_id, current_user["tenant_id"], req)
+    await resolve_icon_urls(agent)
     return ok(
         data=AgentResponse.model_validate(agent).model_dump(mode="json"),
         message="Agent 更新成功",
@@ -202,4 +249,51 @@ async def get_reviews_endpoint(
         total=total,
         page=page,
         page_size=page_size,
+    )
+
+
+# ── 收藏 ──
+@router.post("/agents/{agent_id}/favorite")
+async def favorite_agent_endpoint(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    install = await toggle_favorite(db, current_user["id"], agent_id, True)
+    return ok(
+        data={"id": str(install.id), "agent_id": str(install.agent_id), "is_favorited": install.is_favorited},
+        message="收藏成功",
+    )
+
+
+@router.delete("/agents/{agent_id}/favorite")
+async def unfavorite_agent_endpoint(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    install = await toggle_favorite(db, current_user["id"], agent_id, False)
+    return ok(
+        data={"id": str(install.id), "agent_id": str(install.agent_id), "is_favorited": install.is_favorited},
+        message="已取消收藏",
+    )
+
+
+# ── 图标上传 ──
+@router.post("/agents/{agent_id}/icon")
+async def upload_icon_endpoint(
+    agent_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    file_data = await file.read()
+    agent = await upload_agent_icon(
+        db, agent_id, current_user["tenant_id"],
+        file_data, file.filename or "icon.png", file.content_type or "image/png",
+    )
+    await resolve_icon_urls(agent)
+    return ok(
+        data=AgentResponse.model_validate(agent).model_dump(mode="json"),
+        message="图标上传成功",
     )

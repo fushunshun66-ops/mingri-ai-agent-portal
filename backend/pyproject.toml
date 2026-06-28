@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["users/tests", "agents/tests", "adapters/tests", "common/tests"]
+testpaths = ["users/tests", "agents/tests", "adapters/tests", "chat/tests", "common/tests"]
 addopts = "-v --tb=short"
 pythonpath = ["."]
 
@@ -18,7 +18,7 @@ target-version = "py311"
 select = ["E", "F", "I", "N", "W"]
 
 [tool.coverage.run]
-source = ["common", "users", "agents", "adapters"]
+source = ["common", "users", "agents", "adapters", "chat"]
 omit = ["*/tests/*", "*/alembic/*"]
 
 [tool.coverage.report]

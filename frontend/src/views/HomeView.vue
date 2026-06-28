@@ -14,6 +14,30 @@
         </div>
       </div>
 
+      <!-- 推荐 Agent -->
+      <div class="section recommended-section">
+        <div class="section-header">
+          <h2>推荐 Agent</h2>
+          <el-button text type="primary" @click="$router.push('/marketplace')">
+            查看更多
+          </el-button>
+        </div>
+        <div v-if="agentsStore.recommendedLoading" class="loading-area">
+          <el-skeleton :rows="2" animated />
+        </div>
+        <div v-else-if="agentsStore.recommended.length === 0" class="empty-area">
+          暂无推荐
+        </div>
+        <div v-else class="agent-grid">
+          <AgentCard
+            v-for="agent in agentsStore.recommended"
+            :key="agent.id"
+            :agent="agent"
+            @click="$router.push(`/agents/${agent.id}`)"
+          />
+        </div>
+      </div>
+
       <div class="stats-row">
         <el-card class="stat-card" shadow="hover">
           <div class="stat-number">探索</div>
@@ -33,10 +57,18 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
+import AgentCard from '@/components/AgentCard.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useAgentsStore } from '@/stores/agents'
 
 const authStore = useAuthStore()
+const agentsStore = useAgentsStore()
+
+onMounted(() => {
+  agentsStore.fetchRecommended()
+})
 </script>
 
 <style scoped>
@@ -73,6 +105,37 @@ const authStore = useAuthStore()
   background: #fff;
   color: var(--primary-color);
   border-color: #fff;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.loading-area,
+.empty-area {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .stats-row {

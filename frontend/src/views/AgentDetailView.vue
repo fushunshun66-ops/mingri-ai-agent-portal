@@ -30,6 +30,21 @@
               安装
             </el-button>
           </template>
+          <el-button
+            type="warning"
+            plain
+            :icon="isFavorited ? 'StarFilled' : 'Star'"
+            @click="handleToggleFavorite"
+          >
+            {{ isFavorited ? '已收藏' : '收藏' }}
+          </el-button>
+          <el-button
+            v-if="installed"
+            type="success"
+            @click="handleStartChat"
+          >
+            💬 开始对话
+          </el-button>
           <el-button v-if="isOwner" @click="$router.push(`/agents/${agent.id}/edit`)">
             编辑
           </el-button>
@@ -122,11 +137,13 @@ import { ArrowLeft, StarFilled, Download, User } from '@element-plus/icons-vue'
 import AppLayout from '@/components/AppLayout.vue'
 import { agentsApi } from '@/api/agents'
 import { useAuthStore } from '@/stores/auth'
+import { useAgentsStore } from '@/stores/agents'
 import type { Agent, Review } from '@/types/agent'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const agentsStore = useAgentsStore()
 
 const agent = ref<Agent | null>(null)
 const reviews = ref<Review[]>([])
@@ -134,6 +151,7 @@ const loading = ref(true)
 const installing = ref(false)
 const installed = ref(false)
 const submittingReview = ref(false)
+const isFavorited = ref(false)
 
 const reviewRating = ref(0)
 const reviewComment = ref('')
@@ -215,6 +233,22 @@ async function submitReview() {
   } finally {
     submittingReview.value = false
   }
+}
+
+async function handleToggleFavorite() {
+  if (!agent.value) return
+  try {
+    await agentsStore.toggleFavorite(agent.value.id, isFavorited.value)
+    isFavorited.value = !isFavorited.value
+    ElMessage.success(isFavorited.value ? '已收藏' : '已取消收藏')
+  } catch {
+    ElMessage.error('操作失败')
+  }
+}
+
+function handleStartChat() {
+  if (!agent.value) return
+  router.push({ path: '/chat', query: { agent_id: agent.value.id } })
 }
 
 onMounted(fetchDetail)
