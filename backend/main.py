@@ -20,6 +20,7 @@ from users.router import router as users_router
 from agents.router import router as agents_router
 from adapters.router import router as adapters_router
 from chat.router import router as chat_router
+from monitor.router import router as monitor_router
 
 
 @asynccontextmanager
@@ -58,6 +59,7 @@ app.include_router(users_router)
 app.include_router(agents_router)
 app.include_router(adapters_router)
 app.include_router(chat_router)
+app.include_router(monitor_router)
 
 
 @app.get("/health")

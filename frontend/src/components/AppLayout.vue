@@ -10,6 +10,11 @@
         <router-link to="/marketplace" class="nav-item">Agent 市场</router-link>
         <router-link to="/my-agents" class="nav-item">我的 Agent</router-link>
         <router-link to="/connections" class="nav-item">管理连接</router-link>
+        <router-link
+          v-if="authStore.isAdmin"
+          to="/admin/dashboard"
+          class="nav-item admin-nav"
+        >管理中心</router-link>
       </div>
       <div class="header-right">
         <el-dropdown trigger="click">
@@ -36,15 +41,37 @@
       <!-- 侧边栏 -->
       <el-aside class="app-sidebar" width="220px">
         <div class="sidebar-title">Agent 分类</div>
-        <el-menu :default-active="currentRoute" router>
-          <el-menu-item
-            v-for="cat in agentsStore.categories"
-            :key="cat.id"
-            :index="`/marketplace?category=${cat.id}`"
-          >
-            <span>{{ cat.name }}</span>
-          </el-menu-item>
-        </el-menu>
+        <template v-if="agentsStore.categories.length > 0">
+          <el-menu :default-active="currentRoute" router>
+            <el-menu-item
+              v-for="cat in agentsStore.categories"
+              :key="cat.id"
+              :index="`/marketplace?category=${cat.id}`"
+            >
+              <span>{{ cat.name }}</span>
+            </el-menu-item>
+          </el-menu>
+        </template>
+        <el-empty v-else description="暂无分类" :image-size="40" />
+
+        <!-- 管理后台侧边栏（仅管理员可见） -->
+        <template v-if="authStore.isAdmin">
+          <div class="sidebar-title" style="margin-top: 16px">管理中心</div>
+          <el-menu :default-active="currentRoute" router>
+            <el-menu-item index="/admin/dashboard">
+              <span>📊 仪表盘</span>
+            </el-menu-item>
+            <el-menu-item index="/admin/agents">
+              <span>🤖 Agent 统计</span>
+            </el-menu-item>
+            <el-menu-item index="/admin/users">
+              <span>👥 用户统计</span>
+            </el-menu-item>
+            <el-menu-item index="/admin/audit">
+              <span>📋 审计日志</span>
+            </el-menu-item>
+          </el-menu>
+        </template>
       </el-aside>
 
       <!-- 主内容区 -->
@@ -126,6 +153,17 @@ function handleLogout() {
 .nav-item.router-link-active {
   color: var(--primary-color);
   background-color: rgba(64, 158, 255, 0.08);
+}
+
+.admin-nav {
+  color: var(--color-warning, #e6a23c);
+  font-weight: 500;
+}
+
+.admin-nav:hover,
+.admin-nav.router-link-active {
+  color: var(--color-warning, #e6a23c);
+  background-color: rgba(230, 162, 60, 0.08);
 }
 
 .header-right {

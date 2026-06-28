@@ -25,9 +25,19 @@ export const useAuthStore = defineStore('auth', () => {
   const username = computed(() => user.value?.username ?? '')
   const displayName = computed(() => user.value?.display_name ?? user.value?.username ?? '')
 
+  /** 判断当前用户是否拥有指定角色 */
+  const hasRole = (roles: string[]) => {
+    if (!user.value?.roles) return false
+    return roles.some(role => user.value!.roles.includes(role))
+  }
+
+  /** 是否为管理员（tenant_admin 或 super_admin） */
+  const isAdmin = computed(() => hasRole(['tenant_admin', 'super_admin']))
+
   function setTokens(token: TokenResponse) {
     accessToken.value = token.access_token
     refreshToken.value = token.refresh_token
+    // TODO: 迁移到 httpOnly cookie，消除 XSS 令牌窃取风险
     localStorage.setItem('access_token', token.access_token)
     localStorage.setItem('refresh_token', token.refresh_token)
   }
@@ -46,6 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
       const tokens = resp.data
       accessToken.value = tokens.access_token
       refreshToken.value = tokens.refresh_token
+      // TODO: 迁移到 httpOnly cookie，消除 XSS 令牌窃取风险
       localStorage.setItem('access_token', tokens.access_token)
       localStorage.setItem('refresh_token', tokens.refresh_token)
 
@@ -84,7 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // 初始化时从 localStorage 读取 token
-  function initFromStorage() {
+  async function initFromStorage() {
     const storedAccess = localStorage.getItem('access_token')
     const storedRefresh = localStorage.getItem('refresh_token')
     if (storedAccess && !isTokenExpired(storedAccess)) {
@@ -103,6 +114,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn,
     username,
     displayName,
+    hasRole,
+    isAdmin,
     login,
     register,
     fetchUser,
