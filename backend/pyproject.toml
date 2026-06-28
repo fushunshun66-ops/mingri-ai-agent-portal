@@ -1,0 +1,25 @@
+[project]
+name = "agent-portal"
+version = "0.1.0"
+description = "企业智能体统一门户平台"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["users/tests", "agents/tests", "adapters/tests", "common/tests"]
+addopts = "-v --tb=short"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.coverage.run]
+source = ["common", "users", "agents", "adapters"]
+omit = ["*/tests/*", "*/alembic/*"]
+
+[tool.coverage.report]
+fail_under = 80
