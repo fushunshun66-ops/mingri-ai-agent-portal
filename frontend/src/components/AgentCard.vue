@@ -86,8 +86,8 @@ defineEmits<{
   height: 3px;
   background: linear-gradient(
     90deg,
-    var(--color-primary-500),
-    var(--color-primary-400)
+    var(--color-warm-500),
+    var(--color-warm-400)
   );
   transition: width var(--duration-slow) var(--ease-out);
   transform: translateX(-50%);
@@ -95,6 +95,10 @@ defineEmits<{
 
 .agent-card:hover::before {
   width: 100%;
+}
+
+.agent-card:hover {
+  animation: glow-breathe 3s ease-in-out infinite;
 }
 
 .agent-card-header {
@@ -110,15 +114,15 @@ defineEmits<{
   border-radius: var(--radius-md);
   background: linear-gradient(
     135deg,
-    var(--color-primary-50),
-    var(--color-primary-100)
+    rgba(30, 58, 95, 0.1),
+    rgba(184, 134, 11, 0.08)
   );
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--text-xl);
   font-weight: 700;
-  color: var(--color-primary-600);
+  color: var(--color-warm-500);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -177,8 +181,8 @@ defineEmits<{
   padding: 2px 8px;
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
-  background: var(--color-primary-50);
-  color: var(--color-primary-600);
+  background: rgba(184, 134, 11, 0.08);
+  color: var(--color-warm-500);
   border: none;
 }
 
@@ -215,6 +219,7 @@ defineEmits<{
 
   .agent-card:hover {
     transform: none;
+    animation: none;
   }
 
   .agent-card::before {

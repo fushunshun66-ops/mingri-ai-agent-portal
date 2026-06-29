@@ -112,23 +112,23 @@ function handleLogout() {
 <style scoped>
 .app-layout {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: var(--color-dark-200);
 }
 
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(15, 23, 40, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   position: sticky;
   top: 0;
   z-index: 100;
   height: 56px;
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 0 var(--space-6);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .header-left {
@@ -139,8 +139,8 @@ function handleLogout() {
 .brand-logo {
   font-size: var(--text-lg);
   font-weight: 800;
-  color: var(--color-primary-600);
-  letter-spacing: -0.5px;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: var(--tracking-tight);
   margin: 0;
 }
 
@@ -151,38 +151,38 @@ function handleLogout() {
 
 .nav-item {
   padding: var(--space-2) var(--space-4);
-  color: var(--color-gray-600);
+  color: rgba(255, 255, 255, 0.65);
   font-size: var(--text-sm);
   font-weight: 500;
   border-radius: var(--radius-md);
-  transition:
-    color var(--duration-fast) var(--ease-out),
-    background-color var(--duration-fast) var(--ease-out);
+  transition-property: color, background-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
 }
 
 .nav-item:hover {
-  color: var(--color-gray-800);
-  background: var(--color-gray-100);
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(184, 134, 11, 0.1);
 }
 
 .nav-item.router-link-active {
-  color: var(--color-primary-600);
-  background: var(--color-primary-50);
+  color: var(--color-warm-400);
+  background: rgba(184, 134, 11, 0.12);
   font-weight: 600;
 }
 
 .nav-item.admin-nav {
-  color: var(--color-accent-orange);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .nav-item.admin-nav:hover {
-  color: var(--color-accent-orange);
-  background: var(--color-accent-orange-bg);
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(184, 134, 11, 0.1);
 }
 
 .nav-item.admin-nav.router-link-active {
-  color: var(--color-accent-orange);
-  background: var(--color-accent-orange-bg);
+  color: var(--color-warm-400);
+  background: rgba(184, 134, 11, 0.12);
   font-weight: 600;
 }
 
@@ -202,13 +202,13 @@ function handleLogout() {
 }
 
 .user-info:hover {
-  background: var(--color-gray-100);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .username {
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--color-gray-700);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .app-body {
@@ -216,13 +216,14 @@ function handleLogout() {
 }
 
 .app-sidebar {
-  background: var(--bg-surface);
-  border-right: 1px solid var(--color-gray-100);
+  background: var(--color-dark-50);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: var(--space-3);
 }
 
 .app-sidebar :deep(.el-menu) {
   border-right: none;
+  background: transparent;
 }
 
 .app-sidebar :deep(.el-menu-item) {
@@ -230,27 +231,27 @@ function handleLogout() {
   margin: 2px var(--space-2);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  color: var(--color-gray-600);
-  transition:
-    color var(--duration-fast) var(--ease-out),
-    background-color var(--duration-fast) var(--ease-out);
+  color: rgba(255, 255, 255, 0.65);
+  transition-property: color, background-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
 }
 
 .app-sidebar :deep(.el-menu-item:hover) {
-  background: var(--color-gray-50);
-  color: var(--color-gray-800);
+  background: rgba(184, 134, 11, 0.08);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .app-sidebar :deep(.el-menu-item.is-active) {
-  background: var(--color-primary-50);
-  color: var(--color-primary-600);
+  background: rgba(184, 134, 11, 0.12);
+  color: var(--color-warm-400);
   font-weight: 600;
 }
 
 .sidebar-title {
   padding: 0 var(--space-5) var(--space-2);
   font-size: var(--text-xs);
-  color: var(--color-gray-400);
+  color: rgba(255, 255, 255, 0.35);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;

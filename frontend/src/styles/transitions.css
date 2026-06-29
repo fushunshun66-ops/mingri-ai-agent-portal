@@ -38,6 +38,18 @@
   30%           { transform: translateY(-6px); }
 }
 
+/* 光晕呼吸（暖金光泽缓慢起伏） */
+@keyframes glow-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0); }
+  50%      { box-shadow: 0 0 20px 2px rgba(184, 134, 11, 0.08); }
+}
+
+/* 微光泽扫过 */
+@keyframes sheen {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
 /* ===== Vue 页面路由过渡 ===== */
 
 /* 路由切换：淡入 + 轻微上移 */

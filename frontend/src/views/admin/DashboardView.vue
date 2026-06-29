@@ -133,12 +133,12 @@ import { adminApi, type DashboardOverview, type TimelinePoint } from '@/api/admi
 use([BarChart, LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
 
 const CHART_COLORS = {
-  primary: '#1a56db',
-  primaryLight: '#7baaf7',
-  green: '#059669',
+  primary: '#b8860b',
+  primaryLight: '#1e3a5f',
+  green: '#0891b2',
   orange: '#d97706',
-  gray: '#e5e7eb',
-  grayText: '#6b7280',
+  gray: 'rgba(255,255,255,0.06)',
+  grayText: '#94a3b8',
 }
 
 const loading = ref(true)
@@ -156,6 +156,7 @@ const timeline = ref<TimelinePoint[]>([])
 const platformChartOption = computed<EChartsOption>(() => {
   const data = overview.value.platform_distribution
   return {
+    backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
@@ -194,8 +195,8 @@ const platformChartOption = computed<EChartsOption>(() => {
             x2: 1,
             y2: 0,
             colorStops: [
-              { offset: 0, color: CHART_COLORS.primary },
-              { offset: 1, color: CHART_COLORS.primaryLight },
+              { offset: 0, color: '#b8860b' },
+              { offset: 1, color: '#1e3a5f' },
             ],
           },
         },
@@ -210,6 +211,7 @@ const timelineChartOption = computed<EChartsOption>(() => {
     return `${d.getMonth() + 1}/${d.getDate()}`
   })
   return {
+    backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
     },
@@ -243,8 +245,8 @@ const timelineChartOption = computed<EChartsOption>(() => {
         type: 'line',
         smooth: true,
         data: timeline.value.map((t) => t.sessions),
-        itemStyle: { color: CHART_COLORS.primary },
-        lineStyle: { color: CHART_COLORS.primary, width: 2 },
+        itemStyle: { color: '#b8860b' },
+        lineStyle: { color: '#b8860b', width: 2 },
         areaStyle: {
           color: {
             type: 'linear',
@@ -253,8 +255,8 @@ const timelineChartOption = computed<EChartsOption>(() => {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(26, 86, 219, 0.25)' },
-              { offset: 1, color: 'rgba(26, 86, 219, 0.02)' },
+              { offset: 0, color: 'rgba(184, 134, 11, 0.2)' },
+              { offset: 1, color: 'rgba(184, 134, 11, 0.02)' },
             ],
           },
         },
@@ -274,8 +276,8 @@ const timelineChartOption = computed<EChartsOption>(() => {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(5, 150, 105, 0.2)' },
-              { offset: 1, color: 'rgba(5, 150, 105, 0.02)' },
+              { offset: 0, color: 'rgba(8, 145, 178, 0.2)' },
+              { offset: 1, color: 'rgba(8, 145, 178, 0.02)' },
             ],
           },
         },
@@ -349,20 +351,23 @@ async function fetchAll() {
 }
 
 .metric-card {
-  background: var(--bg-surface);
+  background: linear-gradient(135deg, var(--color-dark-100), var(--color-dark-200));
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-gray-100);
-  transition: all var(--duration-normal) var(--ease-out);
+  border: var(--border-glow);
+  color: rgba(255, 255, 255, 0.85);
+  transition-property: transform, box-shadow, border-color;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-out);
 }
 
 .metric-card:hover {
   box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary-100);
+  border-color: var(--color-warm-400);
   transform: translateY(-1px);
 }
 
@@ -383,31 +388,32 @@ async function fetchAll() {
 }
 
 .metric-card__icon--agents {
-  background: var(--color-primary-50);
+  background: rgba(184, 134, 11, 0.15);
 }
 
 .metric-card__icon--users {
-  background: var(--color-accent-green-bg);
+  background: rgba(8, 145, 178, 0.15);
 }
 
 .metric-card__icon--sessions {
-  background: var(--color-accent-orange-bg);
+  background: rgba(5, 150, 105, 0.15);
 }
 
 .metric-card__icon--tokens {
-  background: var(--color-primary-100);
+  background: rgba(30, 58, 95, 0.25);
 }
 
 .metric-card__value {
   font-size: var(--text-3xl);
   font-weight: 800;
-  color: var(--color-gray-900);
+  color: var(--color-warm-400);
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
 .metric-card__label {
   font-size: var(--text-sm);
-  color: var(--color-gray-500);
+  color: rgba(255, 255, 255, 0.55);
   margin-top: var(--space-1);
 }
 
@@ -419,17 +425,17 @@ async function fetchAll() {
 }
 
 .chart-panel {
-  background: var(--bg-surface);
+  background: linear-gradient(135deg, var(--color-dark-100), var(--color-dark-200));
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-gray-100);
+  border: var(--border-glow);
 }
 
 .chart-panel__title {
   font-size: var(--text-md);
   font-weight: 600;
-  color: var(--color-gray-800);
+  color: rgba(255, 255, 255, 0.85);
   margin: 0 0 var(--space-4);
 }
 
@@ -439,27 +445,37 @@ async function fetchAll() {
 }
 
 .table-panel {
-  background: var(--bg-surface);
+  background: linear-gradient(135deg, var(--color-dark-100), var(--color-dark-200));
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-gray-100);
+  border: var(--border-glow);
+}
+
+.table-panel .chart-panel__title {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .table-panel :deep(.el-table) {
-  --el-table-border-color: var(--color-gray-100);
-  --el-table-header-bg-color: var(--color-gray-50);
-  --el-table-row-hover-bg-color: var(--color-primary-50);
+  background: var(--color-dark-100);
+  --el-table-tr-bg-color: var(--color-dark-100);
+  --el-table-border-color: rgba(255, 255, 255, 0.06);
+  --el-table-header-bg-color: var(--color-dark-200);
+  --el-table-row-hover-bg-color: rgba(184, 134, 11, 0.08);
+}
+
+.table-panel :deep(.el-table .el-table__body tr.el-table__row--striped td) {
+  background: var(--color-dark-200);
 }
 
 .table-panel :deep(.el-table th) {
   font-weight: 600;
-  color: var(--color-gray-600);
+  color: rgba(255, 255, 255, 0.65);
   font-size: var(--text-sm);
 }
 
 .table-panel :deep(.el-table td) {
-  color: var(--color-gray-700);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .rating {

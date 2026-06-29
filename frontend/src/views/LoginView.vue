@@ -135,7 +135,7 @@ async function handleSubmit() {
   right: -30%;
   width: 800px;
   height: 800px;
-  background: radial-gradient(circle, var(--color-primary-50) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(184, 134, 11, 0.06) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -155,7 +155,7 @@ async function handleSubmit() {
 .login-brand {
   flex: 1;
   padding: var(--space-16) var(--space-12);
-  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%);
+  background: linear-gradient(135deg, var(--color-dark-200) 0%, var(--color-dark-100) 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -168,13 +168,14 @@ async function handleSubmit() {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 .login-brand__logo {
-  font-size: var(--text-2xl);
+  font-size: var(--text-3xl);
   font-weight: 800;
+  letter-spacing: var(--tracking-tight);
   margin-bottom: var(--space-3);
   position: relative;
   z-index: 1;
@@ -197,6 +198,7 @@ async function handleSubmit() {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(180deg, #ffffff 0%, rgba(184, 134, 11, 0.02) 100%);
 }
 
 .login-form-panel h2 {
@@ -226,7 +228,7 @@ async function handleSubmit() {
 }
 
 .login-form-panel :deep(.el-input.is-focus .el-input__wrapper) {
-  box-shadow: 0 0 0 2px var(--color-primary-200);
+  box-shadow: 0 0 0 2px var(--color-warm-400);
 }
 
 .login-btn {
@@ -236,14 +238,17 @@ async function handleSubmit() {
   font-size: var(--text-md);
   font-weight: 600;
   margin-top: var(--space-2);
-  transition-property: transform, box-shadow;
+  background: linear-gradient(135deg, var(--color-warm-500), var(--color-warm-600));
+  border-color: transparent;
+  transition-property: transform, box-shadow, background-color;
   transition-duration: var(--duration-normal);
   transition-timing-function: var(--ease-out);
 }
 
 .login-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);
+  box-shadow: 0 0 20px 2px rgba(184, 134, 11, 0.15);
+  animation: glow-breathe 3s ease-in-out infinite;
 }
 
 .login-btn:active {
@@ -252,12 +257,14 @@ async function handleSubmit() {
 
 @media (prefers-reduced-motion: reduce) {
   .login-btn {
-    transition-property: box-shadow;
+    transition-property: box-shadow, background-color;
+    animation: none;
   }
 
   .login-btn:hover,
   .login-btn:active {
     transform: none;
+    animation: none;
   }
 }
 

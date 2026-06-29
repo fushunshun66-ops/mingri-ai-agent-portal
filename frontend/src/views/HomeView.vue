@@ -164,9 +164,9 @@ onMounted(async () => {
   position: relative;
   background: linear-gradient(
     135deg,
-    var(--color-primary-700) 0%,
-    var(--color-primary-500) 50%,
-    var(--color-primary-600) 100%
+    var(--color-dark-100) 0%,
+    var(--color-dark-200) 50%,
+    var(--color-dark-300) 100%
   );
   border-radius: var(--radius-xl);
   padding: var(--space-12) var(--space-12);
@@ -190,14 +190,17 @@ onMounted(async () => {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image:
+    radial-gradient(circle at 70% 30%, rgba(184, 134, 11, 0.08) 0%, transparent 60%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
   pointer-events: none;
 }
 
 .welcome-title {
   font-size: var(--text-3xl);
   font-weight: 800;
+  letter-spacing: var(--tracking-tight);
   margin: 0;
   position: relative;
   z-index: 1;
@@ -231,11 +234,17 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(4px);
+  border: var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-5);
 }
 
 .welcome-stat-item__value {
   font-size: var(--text-xl);
   font-weight: 700;
+  color: var(--color-warm-400);
 }
 
 .welcome-stat-item__label {
@@ -251,9 +260,18 @@ onMounted(async () => {
 }
 
 .quick-actions .el-button--primary {
-  background: #fff;
-  color: var(--color-primary-600);
-  border-color: #fff;
+  background: var(--color-warm-500);
+  color: #fff;
+  border-color: var(--color-warm-500);
+  transition-property: transform, box-shadow, background-color;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-out);
+}
+
+.quick-actions .el-button--primary:hover {
+  background: var(--color-warm-600);
+  border-color: var(--color-warm-600);
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
 }
 
 .recommended-section {
@@ -293,7 +311,9 @@ onMounted(async () => {
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition-property: color, background-color, border-color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
 }
 
 .category-tab:hover {
@@ -301,9 +321,9 @@ onMounted(async () => {
 }
 
 .category-tab--active {
-  background: var(--color-primary-50);
-  color: var(--color-primary-600);
-  border-color: var(--color-primary-200);
+  background: rgba(184, 134, 11, 0.08);
+  color: var(--color-warm-500);
+  border-color: var(--color-warm-500);
   font-weight: 600;
 }
 
@@ -335,14 +355,17 @@ onMounted(async () => {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   text-align: center;
-  transition: all var(--duration-normal) var(--ease-out);
+  transition-property: transform, box-shadow, border-color;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-out);
   border: 1px solid var(--color-gray-100);
 }
 
 .guide-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary-100);
+  border-color: var(--color-warm-400);
+  animation: glow-breathe 3s ease-in-out infinite;
 }
 
 .guide-card__step {
@@ -353,8 +376,8 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-dark-100), var(--color-dark-200));
+  color: var(--color-warm-400);
   font-size: var(--text-lg);
   font-weight: 700;
 }
