@@ -73,5 +73,27 @@ onMounted(fetchAgent)
 
 <style scoped>
 .form-page { max-width: 800px; }
-.loading-area { padding: 48px 0; }
+
+.form-page .page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
+}
+
+.form-page .page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.loading-area { padding: var(--space-12) 0; }
+
+.form-page :deep(.el-empty) {
+  padding: var(--space-12) 0;
+}
+
+.form-page :deep(.el-empty__description) {
+  color: var(--color-gray-500);
+}
 </style>

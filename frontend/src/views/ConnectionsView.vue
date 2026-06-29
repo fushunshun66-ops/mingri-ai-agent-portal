@@ -189,11 +189,87 @@ onMounted(fetchConnections)
 
 <style scoped>
 .connections-page { max-width: 900px; }
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; }
-.connection-card { margin-bottom: 16px; }
-.conn-header { display: flex; justify-content: space-between; align-items: center; }
-.conn-info { display: flex; align-items: center; gap: 12px; }
-.conn-info h3 { margin: 0; font-size: 16px; }
-.conn-time { margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
-.loading-area { padding: 24px 0; }
+
+.connections-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+}
+
+.connections-page .page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
+}
+
+.connections-page .page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.connection-card {
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-100);
+  transition: box-shadow var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.connection-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-100);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-card:hover {
+    transform: none;
+  }
+}
+
+.connection-card :deep(.el-card__body) {
+  padding: var(--space-5);
+}
+
+.conn-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.conn-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.conn-info h3 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.conn-time {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+}
+
+.connections-page :deep(.el-empty) {
+  padding: var(--space-12) 0;
+}
+
+.connections-page :deep(.el-empty__description) {
+  color: var(--color-gray-500);
+}
+
+.loading-area { padding: var(--space-6) 0; }
 </style>

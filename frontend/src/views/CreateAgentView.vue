@@ -50,4 +50,17 @@ async function handleCreate(data: AgentCreateRequest | AgentUpdateRequest) {
 
 <style scoped>
 .form-page { max-width: 800px; }
+
+.form-page .page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
+}
+
+.form-page .page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
 </style>

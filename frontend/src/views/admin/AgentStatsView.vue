@@ -159,47 +159,73 @@ onMounted(() => {
 }
 
 .page-header {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .page-title {
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-gray-800);
   margin: 0;
 }
 
 .filter-bar {
-  background: #fff;
-  border-radius: 12px;
-  padding: 16px 20px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-100);
 }
 
 .table-wrap {
-  background: #fff;
-  border-radius: 12px;
-  padding: 4px 0 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5) 0;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-100);
+}
+
+.table-wrap :deep(.el-table) {
+  --el-table-border-color: var(--color-gray-100);
+  --el-table-header-bg-color: var(--color-gray-50);
+  --el-table-row-hover-bg-color: var(--color-primary-50);
+  --el-table-tr-bg-color: var(--bg-surface);
+  --el-table-striped-row-bg-color: var(--color-gray-50);
+}
+
+.table-wrap :deep(.el-table th) {
+  font-weight: 600;
+  color: var(--color-gray-600);
+  font-size: var(--text-sm);
+}
+
+.table-wrap :deep(.el-table td) {
+  color: var(--color-gray-700);
+  font-size: var(--text-base);
+}
+
+.table-wrap :deep(.el-empty__description) {
+  color: var(--color-gray-500);
 }
 
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
-  padding: 12px 20px 16px;
+  padding: var(--space-3) 0 var(--space-4);
 }
 
 .error-state {
-  padding: 60px 0;
+  padding: var(--space-16) 0;
   text-align: center;
 }
 
 .rating {
-  color: #e6a23c;
+  color: var(--color-accent-orange);
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 </style>

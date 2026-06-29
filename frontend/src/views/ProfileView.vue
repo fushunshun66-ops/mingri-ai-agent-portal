@@ -198,5 +198,45 @@ async function handleChangePassword() {
 
 <style scoped>
 .profile-page { max-width: 1000px; }
-.profile-card { margin-bottom: 24px; }
+
+.profile-page .page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
+}
+
+.profile-page .page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.profile-card {
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-100);
+}
+
+.profile-card :deep(.el-card__header) {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.profile-card :deep(.el-card__header h3) {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-gray-800);
+}
+
+.profile-card :deep(.el-card__body) {
+  padding: var(--space-5);
+}
+
+.profile-card :deep(.el-form-item__label) {
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
 </style>

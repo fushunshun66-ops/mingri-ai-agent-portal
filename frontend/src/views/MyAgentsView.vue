@@ -146,16 +146,63 @@ onMounted(() => fetchMyAgents())
 
 <style scoped>
 .my-agents-page { max-width: 1400px; }
+
+.my-agents-page .page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
+}
+
+.my-agents-page .page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.my-agents-page :deep(.el-tabs__header) {
+  margin-bottom: var(--space-4);
+}
+
+.my-agents-page :deep(.el-tabs__item) {
+  font-size: var(--text-base);
+  color: var(--color-gray-500);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.my-agents-page :deep(.el-tabs__item.is-active) {
+  color: var(--color-primary-500);
+  font-weight: 600;
+}
+
+.my-agents-page :deep(.el-tabs__active-bar) {
+  background-color: var(--color-primary-500);
+}
+
+.my-agents-page :deep(.el-tabs__nav-wrap::after) {
+  background-color: var(--color-gray-200);
+}
+
+.my-agents-page :deep(.el-empty) {
+  padding: var(--space-12) 0;
+}
+
+.my-agents-page :deep(.el-empty__description) {
+  color: var(--color-gray-500);
+}
+
 .agent-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-  margin-top: 16px;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
 }
+
 .pagination-area {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
+  margin-top: var(--space-8);
 }
-.loading-area { padding: 24px 0; }
+
+.loading-area { padding: var(--space-6) 0; }
 </style>
