@@ -170,4 +170,32 @@ describe('HomeView', () => {
     expect(cards[0]?.text()).toContain('智能客服助手')
     expect(mockFetchAgents).not.toHaveBeenCalled()
   })
+
+  it('点击分类 tab 过滤推荐 Agent', async () => {
+    const { wrapper } = createWrapper()
+    const tabs = wrapper.findAll('.category-tab')
+    const catTab = tabs.find(t => t.text().includes('客服'))
+    await catTab!.trigger('click')
+    await wrapper.vm.$nextTick()
+    const cards = wrapper.findAll('.agent-card')
+    expect(cards.length).toBe(1)
+    expect(cards[0]?.text()).toContain('智能客服助手')
+  })
+
+  it('total 为 0 时挂载调用 fetchAgents', async () => {
+    const { useAgentsStore } = await import('@/stores/agents')
+    vi.mocked(useAgentsStore).mockReturnValueOnce({
+      recommended: mockRecommended,
+      recommendedLoading: false,
+      categories: [{ id: 'cat1', name: '客服', slug: 'customer-service', icon: null, sort_order: 1 }],
+      total: 0,
+      fetchRecommended: mockFetchRecommended,
+      fetchCategories: mockFetchCategories,
+      fetchAgents: mockFetchAgents,
+    } as unknown as ReturnType<typeof useAgentsStore>)
+
+    createWrapper()
+    await new Promise(r => setTimeout(r, 50))
+    expect(mockFetchAgents).toHaveBeenCalled()
+  })
 })

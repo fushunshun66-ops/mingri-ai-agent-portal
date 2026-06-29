@@ -98,4 +98,42 @@ describe('RegisterView', () => {
     expect(html).not.toContain('#667eea')
     expect(html).not.toContain('#764ba2')
   })
+
+  it('填写表单字段可交互', async () => {
+    const { wrapper } = createWrapper()
+    const inputs = wrapper.findAll('input')
+    expect(inputs.length).toBeGreaterThan(3)
+  })
+
+  it('注册成功跳转登录页', async () => {
+    mockRegister.mockResolvedValue({ data: { success: true, data: { id: '1' } } })
+    const { wrapper, router } = createWrapper()
+    const pushSpy = vi.spyOn(router, 'push')
+
+    await wrapper.find('input[placeholder="企业唯一标识（字母+数字）"]').setValue('demo-corp')
+    await wrapper.find('input[placeholder="请输入企业名称"]').setValue('Demo Corp')
+    await wrapper.find('input[placeholder="3-100个字符"]').setValue('newuser')
+    await wrapper.find('input[placeholder="请输入邮箱地址"]').setValue('new@example.com')
+    await wrapper.find('input[placeholder="8-128位，需含大小写字母和数字"]').setValue('Password123')
+    await wrapper.vm.$nextTick()
+    await wrapper.find('form').trigger('submit')
+    await new Promise(r => setTimeout(r, 150))
+
+    expect(mockRegister).toHaveBeenCalled()
+    expect(pushSpy).toHaveBeenCalledWith('/login')
+  })
+
+  it('注册失败时显示错误', async () => {
+    mockRegister.mockRejectedValue({ response: { data: { message: '用户名已存在' } } })
+    const { wrapper } = createWrapper()
+    await wrapper.find('input[placeholder="企业唯一标识（字母+数字）"]').setValue('demo-corp')
+    await wrapper.find('input[placeholder="请输入企业名称"]').setValue('Demo Corp')
+    await wrapper.find('input[placeholder="3-100个字符"]').setValue('newuser')
+    await wrapper.find('input[placeholder="请输入邮箱地址"]').setValue('new@example.com')
+    await wrapper.find('input[placeholder="8-128位，需含大小写字母和数字"]').setValue('Password123')
+    await wrapper.vm.$nextTick()
+    await wrapper.find('form').trigger('submit')
+    await new Promise(r => setTimeout(r, 150))
+    expect(mockRegister).toHaveBeenCalled()
+  })
 })

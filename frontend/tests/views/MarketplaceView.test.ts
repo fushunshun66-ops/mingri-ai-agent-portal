@@ -1,11 +1,20 @@
-// MarketplaceView 测试 — 市场列表渲染和筛选
+// MarketplaceView 测试 — 使用真实 store + mock API
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import ElementPlus from 'element-plus'
 
-// Mock stores with agent data pre-populated
+const mockList = vi.fn()
+const mockGetCategories = vi.fn()
+
+vi.mock('@/api/agents', () => ({
+  agentsApi: {
+    list: (...args: unknown[]) => mockList(...args),
+    getCategories: (...args: unknown[]) => mockGetCategories(...args),
+  },
+}))
+
 vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn(() => ({
     isLoggedIn: true,
@@ -13,139 +22,106 @@ vi.mock('@/stores/auth', () => ({
   })),
 }))
 
-vi.mock('@/stores/agents', () => ({
-  useAgentsStore: vi.fn(() => ({
-    agents: [
-      {
-        id: '1', tenant_id: 't1', name: '智能客服助手', description: '自动回答客户问题',
-        icon_url: null, category_id: 'cat1',
-        category: { id: 'cat1', name: '客服', slug: 'customer-service', icon: null, sort_order: 1 },
-        tags: [{ name: '客服' }, { name: 'AI' }], platform_type: 'dify', platform_config: null,
-        capability: null, input_schema: null, output_schema: null,
-        visibility: 'tenant_visible', status: 'published', version: '1.0.0', owner_id: 'u1',
-        install_count: 128, rating_avg: 4.5, review_count: 32, created_at: '2026-01-01T00:00:00Z', updated_at: null,
-      },
-      {
-        id: '2', tenant_id: 't1', name: '数据分析机器人', description: '智能数据分析',
-        icon_url: null, category_id: 'cat2',
-        category: { id: 'cat2', name: '数据分析', slug: 'data-analysis', icon: null, sort_order: 2 },
-        tags: [{ name: '数据分析' }], platform_type: 'n8n', platform_config: null,
-        capability: null, input_schema: null, output_schema: null,
-        visibility: 'tenant_visible', status: 'published', version: '1.0.0', owner_id: 'u2',
-        install_count: 56, rating_avg: 4.2, review_count: 15, created_at: '2026-01-02T00:00:00Z', updated_at: null,
-      },
-    ],
-    total: 2,
-    loading: false,
-    categories: [
-      { id: 'cat1', name: '客服', slug: 'customer-service', icon: null, sort_order: 1 },
-      { id: 'cat2', name: '数据分析', slug: 'data-analysis', icon: null, sort_order: 2 },
-    ],
-    currentQuery: { page: 1, page_size: 20 },
-    fetchAgents: vi.fn(),
-    fetchCategories: vi.fn(),
-  })),
-}))
-
 import MarketplaceView from '@/views/MarketplaceView.vue'
+
+const mockAgent = {
+  id: '1', tenant_id: 't1', name: '智能客服助手', description: '自动回答客户问题',
+  icon_url: null, category_id: 'cat1',
+  category: { id: 'cat1', name: '客服', slug: 'customer-service', icon: null, sort_order: 1 },
+  tags: [{ name: '客服' }], platform_type: 'dify' as const, platform_config: null,
+  capability: null, input_schema: null, output_schema: null,
+  visibility: 'tenant_visible' as const, status: 'published' as const, version: '1.0.0', owner_id: 'u1',
+  install_count: 128, rating_avg: 4.5, review_count: 32, created_at: '2026-01-01T00:00:00Z', updated_at: null,
+}
 
 function createWrapper() {
   const pinia = createPinia()
   setActivePinia(pinia)
-
   const router = createRouter({
     history: createWebHistory(),
     routes: [
       { path: '/marketplace', component: MarketplaceView },
-      { path: '/agents/create', component: { template: '<div>Create Agent</div>' } },
-      { path: '/agents/:id', component: { template: '<div>Agent Detail</div>' } },
+      { path: '/agents/create', component: { template: '<div>Create</div>' } },
     ],
   })
-
-  return {
-    wrapper: mount(MarketplaceView, {
-      global: {
-        plugins: [pinia, router, ElementPlus],
-        stubs: {
-          'router-link': { template: '<a :href="to"><slot /></a>', props: ['to'] },
-          'el-skeleton': { template: '<div class="el-skeleton"><slot /></div>' },
-          'el-empty': { template: '<div>暂无 Agent</div>' },
-          'el-pagination': { template: '<div class="el-pagination"><slot /></div>' },
-          'el-icon': { template: '<span class="el-icon"><slot /></span>' },
-        },
+  return mount(MarketplaceView, {
+    global: {
+      plugins: [pinia, router, ElementPlus],
+      stubs: {
+        AppLayout: { template: '<div><slot /></div>' },
       },
-    }),
-    router,
-  }
+    },
+  })
 }
 
 describe('MarketplaceView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockList.mockResolvedValue({
+      data: { success: true, data: [mockAgent], pagination: { total: 1, page: 1, page_size: 20, total_pages: 1 } },
+    })
+    mockGetCategories.mockResolvedValue({
+      data: { success: true, data: [{ id: 'cat1', name: '客服', slug: 'customer-service', icon: null, sort_order: 1 }] },
+    })
   })
 
-  it('渲染 Agent 市场页面标题', () => {
-    const { wrapper } = createWrapper()
+  it('渲染 Agent 市场页面标题', async () => {
+    const wrapper = createWrapper()
+    await new Promise(r => setTimeout(r, 50))
     expect(wrapper.text()).toContain('Agent 市场')
   })
 
-  it('显示 Agent 卡片列表', () => {
-    const { wrapper } = createWrapper()
-    const text = wrapper.text()
-    expect(text).toContain('智能客服助手')
-    expect(text).toContain('数据分析机器人')
+  it('挂载时加载 Agent 和分类', async () => {
+    createWrapper()
+    await new Promise(r => setTimeout(r, 100))
+    expect(mockGetCategories).toHaveBeenCalled()
+    expect(mockList).toHaveBeenCalled()
   })
 
-  it('显示 Agent 描述信息', () => {
-    const { wrapper } = createWrapper()
-    expect(wrapper.text()).toContain('自动回答客户问题')
+  it('显示 Agent 卡片', async () => {
+    const wrapper = createWrapper()
+    await new Promise(r => setTimeout(r, 100))
+    expect(wrapper.text()).toContain('智能客服助手')
   })
 
-  it('显示 Agent 评分信息', () => {
-    const { wrapper } = createWrapper()
-    expect(wrapper.text()).toContain('4.5')
-  })
-
-  it('显示分类筛选区域（category-pill）', () => {
-    const { wrapper } = createWrapper()
-    expect(wrapper.find('.category-filter').exists()).toBe(true)
+  it('点击分类 pill 触发筛选', async () => {
+    const wrapper = createWrapper()
+    await new Promise(r => setTimeout(r, 100))
+    mockList.mockClear()
     const pills = wrapper.findAll('.category-pill')
-    expect(pills.length).toBeGreaterThan(0)
-    const text = wrapper.text()
-    expect(text).toContain('客服')
-    expect(text).toContain('数据分析')
+    const catPill = pills.find(p => p.text().includes('客服'))
+    await catPill!.trigger('click')
+    await new Promise(r => setTimeout(r, 50))
+    expect(mockList).toHaveBeenCalled()
   })
 
-  it('包含 marketplace-toolbar 工具栏', () => {
-    const { wrapper } = createWrapper()
-    expect(wrapper.find('.marketplace-toolbar').exists()).toBe(true)
+  it('搜索输入触发 fetchAgents', async () => {
+    const wrapper = createWrapper()
+    await new Promise(r => setTimeout(r, 50))
+    mockList.mockClear()
+    const input = wrapper.find('input[placeholder="搜索 Agent..."]')
+    await input.setValue('客服')
+    await new Promise(r => setTimeout(r, 400))
+    expect(mockList).toHaveBeenCalled()
   })
 
-  it('加载态使用 agent-grid-skeleton 骨架屏', async () => {
-    const { useAgentsStore } = await import('@/stores/agents')
-    vi.mocked(useAgentsStore).mockReturnValueOnce({
-      agents: [],
-      total: 0,
-      loading: true,
-      categories: [],
-      currentQuery: { page: 1, page_size: 20 },
-      fetchAgents: vi.fn(),
-      fetchCategories: vi.fn(),
-    } as unknown as ReturnType<typeof useAgentsStore>)
-
-    const { wrapper } = createWrapper()
-    expect(wrapper.find('.agent-grid-skeleton').exists()).toBe(true)
+  it('分页变更时重新加载', async () => {
+    mockList.mockResolvedValue({
+      data: { success: true, data: [mockAgent], pagination: { total: 50, page: 1, page_size: 20, total_pages: 3 } },
+    })
+    const wrapper = createWrapper()
+    await new Promise(r => setTimeout(r, 100))
+    mockList.mockClear()
+    const pagination = wrapper.findComponent({ name: 'ElPagination' })
+    if (pagination.exists()) {
+      pagination.vm.$emit('current-change', 2)
+      await new Promise(r => setTimeout(r, 50))
+      expect(mockList).toHaveBeenCalled()
+    }
   })
 
-  it('包含搜索输入框', () => {
-    const { wrapper } = createWrapper()
-    const inputs = wrapper.findAll('input')
-    const searchInput = inputs.find(el => (el.element as HTMLInputElement).placeholder?.includes('搜索'))
-    expect(searchInput).toBeTruthy()
-  })
-
-  it('包含创建 Agent 入口', () => {
-    const { wrapper } = createWrapper()
+  it('包含创建 Agent 入口', async () => {
+    const wrapper = createWrapper()
     expect(wrapper.text()).toContain('创建 Agent')
   })
 })

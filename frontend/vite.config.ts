@@ -26,5 +26,13 @@ export default defineConfig({
     globals: true,
     css: true,
     setupFiles: ['./tests/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      exclude: ['src/main.ts', 'src/router/**', 'src/types/**'],
+      thresholds: {
+        statements: 80,
+        lines: 80,
+      },
+    },
   },
 })
