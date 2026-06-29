@@ -1,7 +1,7 @@
 <template>
   <el-container class="app-layout">
     <!-- 顶部导航栏 -->
-    <el-header class="app-header" height="60px">
+    <el-header class="app-header" height="56px">
       <div class="header-left">
         <h1 class="brand-logo">智能体门户</h1>
       </div>
@@ -9,6 +9,7 @@
         <router-link to="/home" class="nav-item">首页</router-link>
         <router-link to="/marketplace" class="nav-item">Agent 市场</router-link>
         <router-link to="/my-agents" class="nav-item">我的 Agent</router-link>
+        <router-link to="/chat" class="nav-item">对话</router-link>
         <router-link to="/connections" class="nav-item">管理连接</router-link>
         <router-link
           v-if="authStore.isAdmin"
@@ -111,17 +112,23 @@ function handleLogout() {
 <style scoped>
 .app-layout {
   min-height: 100vh;
-  background-color: var(--bg-color);
+  background: var(--bg-page);
 }
 
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border-bottom: 1px solid var(--border-color);
-  padding: 0 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 56px;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: 0 var(--space-6);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-left {
@@ -130,40 +137,53 @@ function handleLogout() {
 }
 
 .brand-logo {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--color-primary-600);
+  letter-spacing: -0.5px;
   margin: 0;
 }
 
 .header-nav {
   display: flex;
-  gap: 8px;
+  gap: var(--space-1);
 }
 
 .nav-item {
-  padding: 8px 16px;
-  color: var(--text-regular);
-  font-size: 14px;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.nav-item:hover,
-.nav-item.router-link-active {
-  color: var(--primary-color);
-  background-color: rgba(64, 158, 255, 0.08);
-}
-
-.admin-nav {
-  color: var(--color-warning, #e6a23c);
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-gray-600);
+  font-size: var(--text-sm);
   font-weight: 500;
+  border-radius: var(--radius-md);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
-.admin-nav:hover,
-.admin-nav.router-link-active {
-  color: var(--color-warning, #e6a23c);
-  background-color: rgba(230, 162, 60, 0.08);
+.nav-item:hover {
+  color: var(--color-gray-800);
+  background: var(--color-gray-100);
+}
+
+.nav-item.router-link-active {
+  color: var(--color-primary-600);
+  background: var(--color-primary-50);
+  font-weight: 600;
+}
+
+.nav-item.admin-nav {
+  color: var(--color-accent-orange);
+}
+
+.nav-item.admin-nav:hover {
+  color: var(--color-accent-orange);
+  background: var(--color-accent-orange-bg);
+}
+
+.nav-item.admin-nav.router-link-active {
+  color: var(--color-accent-orange);
+  background: var(--color-accent-orange-bg);
+  font-weight: 600;
 }
 
 .header-right {
@@ -174,42 +194,71 @@ function handleLogout() {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background 0.2s;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .user-info:hover {
-  background-color: #f5f7fa;
+  background: var(--color-gray-100);
 }
 
 .username {
-  font-size: 14px;
-  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-gray-700);
 }
 
 .app-body {
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 56px);
 }
 
 .app-sidebar {
-  background: #fff;
-  border-right: 1px solid var(--border-color);
-  padding-top: 16px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--color-gray-100);
+  padding-top: var(--space-3);
+}
+
+.app-sidebar :deep(.el-menu) {
+  border-right: none;
+}
+
+.app-sidebar :deep(.el-menu-item) {
+  height: 40px;
+  margin: 2px var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.app-sidebar :deep(.el-menu-item:hover) {
+  background: var(--color-gray-50);
+  color: var(--color-gray-800);
+}
+
+.app-sidebar :deep(.el-menu-item.is-active) {
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+  font-weight: 600;
 }
 
 .sidebar-title {
-  padding: 0 20px 12px;
-  font-size: 12px;
-  color: var(--text-secondary);
+  padding: 0 var(--space-5) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .app-main {
-  background: var(--bg-color);
-  min-height: calc(100vh - 60px);
+  background: var(--bg-page);
+  min-height: calc(100vh - 56px);
+  padding: var(--space-5);
 }
 </style>

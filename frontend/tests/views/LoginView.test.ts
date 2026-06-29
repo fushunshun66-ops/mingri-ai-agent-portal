@@ -139,4 +139,26 @@ describe('LoginView', () => {
     // 空表单不应触发 API
     // Element Plus 的 form validation 会阻止提交，所以 mockLogin 不应被调用
   })
+
+  it('使用左右分栏布局：wrapper、brand、form-panel', () => {
+    const { wrapper } = createWrapper()
+    expect(wrapper.find('.login-wrapper').exists()).toBe(true)
+    expect(wrapper.find('.login-brand').exists()).toBe(true)
+    expect(wrapper.find('.login-form-panel').exists()).toBe(true)
+  })
+
+  it('品牌区展示产品名称与 Slogan', () => {
+    const { wrapper } = createWrapper()
+    const brand = wrapper.find('.login-brand')
+    expect(brand.text()).toContain('企业智能体')
+    expect(brand.find('.login-brand__logo').exists()).toBe(true)
+    expect(brand.find('.login-brand__slogan').exists()).toBe(true)
+  })
+
+  it('不使用旧版紫色渐变背景', () => {
+    const { wrapper } = createWrapper()
+    const html = wrapper.html()
+    expect(html).not.toContain('#667eea')
+    expect(html).not.toContain('#764ba2')
+  })
 })

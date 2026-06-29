@@ -1,0 +1,62 @@
+/* ===== 全局动画与过渡 — 企业智能体统一门户 ===== */
+
+/* ===== 关键帧动画 ===== */
+
+/* 淡入上移（页面过渡、消息出现） */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 淡入缩放（弹窗、卡片加载） */
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* 骨架屏闪烁 */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* 打字光标闪烁 */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* 脉冲（在线指示器） */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* 打字指示器弹跳 */
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-6px); }
+}
+
+/* ===== Vue 页面路由过渡 ===== */
+
+/* 路由切换：淡入 + 轻微上移 */
+.page-enter-active {
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+.page-leave-active {
+  transition: opacity var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+.page-enter-from { opacity: 0; transform: translateY(8px); }
+.page-leave-to   { opacity: 0; transform: translateY(-8px); }
+
+/* ===== 通用动画工具类 ===== */
+.animate-fade-in-up {
+  animation: fade-in-up var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale var(--duration-slow) var(--ease-spring) both;
+}

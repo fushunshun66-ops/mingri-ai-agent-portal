@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     # ── 数据库 ──
     postgres_host: str = "localhost"
-    postgres_port: int = 5432
+    postgres_port: int = 5433
     postgres_db: str = "agent_portal"
     postgres_user: str = "portal"
     postgres_password: str = "change_me_in_prod"
@@ -40,7 +40,7 @@ class Settings(BaseSettings):
 
     # ── Redis ──
     redis_host: str = "localhost"
-    redis_port: int = 6379
+    redis_port: int = 6380
     redis_password: str = "change_me_in_prod"
 
     @property

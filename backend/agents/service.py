@@ -62,7 +62,7 @@ async def create_agent(
         await db.rollback()
         raise ConflictException(message="Agent 名称已存在")
     await db.refresh(agent)
-    return agent
+    return await get_agent(db, agent.id, tenant_id)
 
 
 async def get_agent(db: AsyncSession, agent_id: uuid.UUID | str, tenant_id: uuid.UUID | str) -> Agent:

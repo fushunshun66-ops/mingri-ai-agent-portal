@@ -1,9 +1,10 @@
 <template>
-  <el-card class="agent-card" shadow="hover" @click="$emit('click')">
+  <div class="agent-card" @click="$emit('click')">
     <div class="agent-card-header">
-      <el-avatar :size="48" shape="square" :src="agent.icon_url || undefined">
-        {{ agent.name.charAt(0).toUpperCase() }}
-      </el-avatar>
+      <div class="agent-icon">
+        <img v-if="agent.icon_url" :src="agent.icon_url" alt="" />
+        <span v-else>{{ agent.name.charAt(0).toUpperCase() }}</span>
+      </div>
       <div class="agent-card-title">
         <h3 class="agent-name">{{ agent.name }}</h3>
         <div class="agent-platform">
@@ -37,7 +38,7 @@
         </span>
       </div>
     </div>
-  </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -55,20 +56,77 @@ defineEmits<{
 
 <style scoped>
 .agent-card {
+  position: relative;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-radius: 10px;
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-100);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  padding: var(--space-4);
+  animation: fade-in-up var(--duration-slow) var(--ease-out) both;
 }
 
 .agent-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-100);
+}
+
+.agent-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary-500),
+    var(--color-primary-400)
+  );
+  transition: width var(--duration-slow) var(--ease-out);
+  transform: translateX(-50%);
+}
+
+.agent-card:hover::before {
+  width: 100%;
 }
 
 .agent-card-header {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
+}
+
+.agent-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-50),
+    var(--color-primary-100)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-primary-600);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.agent-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .agent-card-title {
@@ -77,20 +135,31 @@ defineEmits<{
 }
 
 .agent-name {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 4px;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.agent-platform :deep(.el-tag) {
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  padding: 0 8px;
+  height: 22px;
+  line-height: 22px;
+  border: none;
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
 .agent-description {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 12px;
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  line-height: 1.6;
+  margin-bottom: var(--space-3);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -99,32 +168,57 @@ defineEmits<{
 
 .agent-tags {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
-.tag-item {
-  font-size: 11px;
+.agent-tags :deep(.tag-item) {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+  border: none;
 }
 
 .agent-card-footer {
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 12px;
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: var(--space-3);
 }
 
 .agent-stats {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--text-secondary);
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+}
+
+.stat-item :deep(.el-icon) {
+  font-size: 14px;
+  color: var(--color-gray-300);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-card {
+    animation: none;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .agent-card:hover {
+    transform: none;
+  }
+
+  .agent-card::before {
+    transition: none;
+  }
 }
 </style>

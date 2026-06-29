@@ -128,4 +128,21 @@ describe('AppLayout', () => {
     const { wrapper } = createWrapper()
     expect(wrapper.text()).toContain('退出')
   })
+
+  it('管理员可见 admin-nav 管理中心链接', async () => {
+    const { useAuthStore } = await import('@/stores/auth')
+    vi.mocked(useAuthStore).mockReturnValue({
+      isLoggedIn: true,
+      isAdmin: true,
+      user: { id: '1', username: 'admin', display_name: '管理员', avatar_url: null },
+      displayName: '管理员',
+      logout: vi.fn(),
+      fetchUser: vi.fn(),
+    } as unknown as ReturnType<typeof useAuthStore>)
+
+    const { wrapper } = createWrapper()
+    const adminLink = wrapper.find('.admin-nav')
+    expect(adminLink.exists()).toBe(true)
+    expect(adminLink.text()).toContain('管理中心')
+  })
 })

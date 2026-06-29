@@ -76,10 +76,12 @@ import ChatSidebar from '@/components/ChatSidebar.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
 import ChatInput from '@/components/ChatInput.vue'
 import { useChatStore } from '@/stores/chat'
+import { useAgentsStore } from '@/stores/agents'
 import { chatApi } from '@/api/chat'
 
 const route = useRoute()
 const chatStore = useChatStore()
+const agentsStore = useAgentsStore()
 const messageListRef = ref<HTMLElement | null>(null)
 
 // 自动滚动到底部
@@ -98,7 +100,17 @@ watch(() => chatStore.streamingContent, scrollToBottom)
 // 新建会话
 async function handleCreateSession() {
   try {
-    const agentId = route.query.agent_id as string | undefined
+    let agentId = route.query.agent_id as string | undefined
+    if (!agentId) {
+      if (agentsStore.agents.length === 0) {
+        await agentsStore.fetchAgents({ page: 1, page_size: 1, status: 'published' })
+      }
+      agentId = agentsStore.agents[0]?.id
+    }
+    if (!agentId) {
+      ElMessage.warning('暂无可用 Agent，请先到市场创建 Agent')
+      return
+    }
     await chatStore.createSession(agentId)
     ElMessage.success('会话已创建')
   } catch {
@@ -164,8 +176,8 @@ onMounted(async () => {
 <style scoped>
 .chat-page {
   display: flex;
-  height: calc(100vh - 60px);
-  margin: -20px -20px 0;
+  height: calc(100vh - 56px);
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) 0;
 }
 
 .chat-main {
@@ -173,26 +185,27 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: #fff;
+  background: var(--color-gray-50);
 }
 
 .chat-header {
-  padding: 12px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  background: #fff;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--bg-surface);
 }
 
 .chat-title {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-gray-800);
+  text-wrap: balance;
 }
 
 .message-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 0;
-  background: #f8f9fa;
+  padding: var(--space-4) 0;
+  background: linear-gradient(to bottom, var(--color-gray-50), var(--bg-surface) 10%);
 }
 
 .loading-messages {
@@ -201,9 +214,10 @@ onMounted(async () => {
 
 .no-messages {
   text-align: center;
-  color: var(--text-secondary);
-  padding: 48px 0;
-  font-size: 14px;
+  color: var(--color-gray-500);
+  padding: var(--space-12) 0;
+  font-size: var(--text-base);
+  text-wrap: pretty;
 }
 
 .empty-chat {
@@ -212,7 +226,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--color-gray-500);
 }
 
 .empty-icon {
@@ -221,13 +235,15 @@ onMounted(async () => {
 }
 
 .empty-chat h2 {
-  font-size: 20px;
-  color: var(--text-primary);
-  margin: 0 0 8px;
+  font-size: var(--text-xl);
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
+  text-wrap: balance;
 }
 
 .empty-chat p {
-  font-size: 14px;
-  margin-bottom: 20px;
+  font-size: var(--text-base);
+  margin-bottom: var(--space-5);
+  text-wrap: pretty;
 }
 </style>

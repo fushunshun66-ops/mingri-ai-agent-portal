@@ -77,6 +77,14 @@ describe('ChatMessage', () => {
       await wrapper.find('.feedback-btn--dislike').trigger('click')
       expect(wrapper.emitted('feedback')?.[0]).toEqual(['dislike'])
     })
+
+    it('反馈按钮具有 aria-label 无障碍标签', () => {
+      const wrapper = mount(ChatMessage, {
+        props: { role: 'assistant', content: '测试', timestamp: '2026-06-28T10:00:00Z' },
+      })
+      expect(wrapper.find('.feedback-btn--like').attributes('aria-label')).toBe('有帮助')
+      expect(wrapper.find('.feedback-btn--dislike').attributes('aria-label')).toBe('没帮助')
+    })
   })
 
   // ---- Markdown 渲染 ----
@@ -119,6 +127,30 @@ describe('ChatMessage', () => {
         props: { role: 'assistant', content: '', timestamp: '2026-06-28T10:00:00Z' },
       })
       expect(wrapper.find('.message-content').exists()).toBe(true)
+    })
+
+    it('渲染 fenced 代码块并语法高亮', () => {
+      const wrapper = mount(ChatMessage, {
+        props: {
+          role: 'assistant',
+          content: '```javascript\nconst x = 1\n```',
+          timestamp: '2026-06-28T10:00:00Z',
+        },
+      })
+      expect(wrapper.find('code.hljs').exists()).toBe(true)
+      expect(wrapper.html()).toContain('hljs-keyword')
+    })
+
+    it('过滤 XSS 脚本标签', () => {
+      const wrapper = mount(ChatMessage, {
+        props: {
+          role: 'assistant',
+          content: '<script>alert(1)</script>安全文本',
+          timestamp: '2026-06-28T10:00:00Z',
+        },
+      })
+      expect(wrapper.html()).not.toContain('<script')
+      expect(wrapper.text()).toContain('安全文本')
     })
   })
 

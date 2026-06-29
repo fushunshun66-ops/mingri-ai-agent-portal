@@ -96,5 +96,13 @@ describe('ChatSidebar', () => {
       await deleteBtn.trigger('click')
       expect(wrapper.emitted('delete')?.[0]).toEqual(['s1'])
     })
+
+    it('删除按钮具有 aria-label 无障碍标签', () => {
+      const wrapper = mount(ChatSidebar, {
+        props: { sessions: mockSessions, loading: false, currentSessionId: null },
+      })
+      const deleteBtn = wrapper.find('.delete-btn')
+      expect(deleteBtn.attributes('aria-label')).toBe('删除会话')
+    })
   })
 })

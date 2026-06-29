@@ -73,7 +73,7 @@
 
       <!-- 平台配置（根据 platform_type 动态展示） -->
       <template v-if="formData.platform_type && formData.platform_type !== 'builtin'">
-        <el-divider content-position="left">平台配置</el-divider>
+        <h4 class="form-section-title">平台配置</h4>
 
         <el-form-item v-if="formData.platform_type === 'dify'" label="Dify API Key">
           <el-input
@@ -129,7 +129,7 @@
       </template>
 
       <!-- 标签 -->
-      <el-divider content-position="left">标签</el-divider>
+      <h4 class="form-section-title">标签</h4>
       <TagInput v-model="tags" />
 
       <el-form-item style="margin-top: 24px">
@@ -223,13 +223,80 @@ onMounted(fetchCategories)
 
 <style scoped>
 .agent-form {
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-100);
+  box-shadow: var(--shadow-sm);
 }
 
+/* 分节标题（替代 el-divider） */
+.form-section-title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-gray-800);
+  margin: var(--space-8) 0 var(--space-4);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-primary-500);
+}
+
+/* 输入框 */
+.agent-form :deep(.el-input .el-input__wrapper) {
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--color-gray-200);
+  background: var(--color-gray-50);
+  transition: box-shadow var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+
+.agent-form :deep(.el-input .el-input__wrapper:hover) {
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 1px var(--color-gray-300);
+}
+
+.agent-form :deep(.el-input.is-focus .el-input__wrapper) {
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--color-primary-200);
+}
+
+/* 文本域 */
+.agent-form :deep(.el-textarea .el-textarea__inner) {
+  border-radius: var(--radius-md);
+  border-color: var(--color-gray-200);
+  background: var(--color-gray-50);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.agent-form :deep(.el-textarea .el-textarea__inner:hover) {
+  border-color: var(--color-gray-300);
+  background: var(--bg-surface);
+}
+
+.agent-form :deep(.el-textarea .el-textarea__inner:focus) {
+  background: var(--bg-surface);
+  border-color: var(--color-primary-300);
+  box-shadow: 0 0 0 2px var(--color-primary-100);
+}
+
+/* 选择器 */
+.agent-form :deep(.el-select .el-select__wrapper) {
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--color-gray-200);
+  background: var(--color-gray-50);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.agent-form :deep(.el-select .el-select__wrapper:hover) {
+  background: var(--bg-surface);
+}
+
+/* 图标上传区 — 虚线按钮 */
 .icon-upload {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
 }
 
@@ -237,15 +304,69 @@ onMounted(fetchCategories)
   flex: 1;
 }
 
+.agent-form :deep(.icon-upload .el-button) {
+  border-style: dashed;
+  border-color: var(--color-gray-200);
+  background: transparent;
+  color: var(--color-gray-500);
+  font-size: var(--text-sm);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.agent-form :deep(.icon-upload .el-button:hover) {
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-500);
+  background: var(--color-primary-50);
+}
+
+/* 提交按钮 */
+.agent-form :deep(.el-button--primary) {
+  height: 40px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.agent-form :deep(.el-button--primary:hover) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 86, 219, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-form :deep(.el-button--primary:hover) {
+    transform: none;
+  }
+}
+
+/* 取消按钮 */
+.agent-form :deep(.el-button.is-plain) {
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-6);
+}
+
+/* Label */
+.agent-form :deep(.el-form-item__label) {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-gray-700);
+  padding-bottom: var(--space-1);
+}
+
 .icon-divider {
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--color-gray-300);
+  font-size: var(--text-sm);
   white-space: nowrap;
 }
 
 .file-hint {
-  font-size: 12px;
-  color: var(--primary-color);
-  margin-top: 4px;
+  font-size: var(--text-xs);
+  color: var(--color-primary-500);
+  margin-top: var(--space-1);
 }
 </style>

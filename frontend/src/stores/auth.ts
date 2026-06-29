@@ -101,7 +101,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (storedAccess && !isTokenExpired(storedAccess)) {
       accessToken.value = storedAccess
       refreshToken.value = storedRefresh
-      fetchUser()
+      await fetchUser()
     } else {
       clearAuth()
     }

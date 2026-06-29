@@ -106,11 +106,35 @@ describe('MarketplaceView', () => {
     expect(wrapper.text()).toContain('4.5')
   })
 
-  it('显示分类筛选区域', () => {
+  it('显示分类筛选区域（category-pill）', () => {
     const { wrapper } = createWrapper()
+    expect(wrapper.find('.category-filter').exists()).toBe(true)
+    const pills = wrapper.findAll('.category-pill')
+    expect(pills.length).toBeGreaterThan(0)
     const text = wrapper.text()
     expect(text).toContain('客服')
     expect(text).toContain('数据分析')
+  })
+
+  it('包含 marketplace-toolbar 工具栏', () => {
+    const { wrapper } = createWrapper()
+    expect(wrapper.find('.marketplace-toolbar').exists()).toBe(true)
+  })
+
+  it('加载态使用 agent-grid-skeleton 骨架屏', async () => {
+    const { useAgentsStore } = await import('@/stores/agents')
+    vi.mocked(useAgentsStore).mockReturnValueOnce({
+      agents: [],
+      total: 0,
+      loading: true,
+      categories: [],
+      currentQuery: { page: 1, page_size: 20 },
+      fetchAgents: vi.fn(),
+      fetchCategories: vi.fn(),
+    } as unknown as ReturnType<typeof useAgentsStore>)
+
+    const { wrapper } = createWrapper()
+    expect(wrapper.find('.agent-grid-skeleton').exists()).toBe(true)
   })
 
   it('包含搜索输入框', () => {

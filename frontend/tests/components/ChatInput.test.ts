@@ -23,6 +23,24 @@ describe('ChatInput', () => {
       const textarea = wrapper.find('textarea')
       expect(textarea.attributes('placeholder')).toBeTruthy()
     })
+
+    it('渲染指令建议栏', () => {
+      const wrapper = mount(ChatInput)
+      expect(wrapper.find('.suggestion-bar').exists()).toBe(true)
+      expect(wrapper.findAll('.suggestion-chip').length).toBeGreaterThan(0)
+    })
+  })
+
+  // ---- 指令建议 ----
+  describe('指令建议', () => {
+    it('点击建议 chip 填入输入框', async () => {
+      const wrapper = mount(ChatInput)
+      const chip = wrapper.find('.suggestion-chip')
+      const chipText = chip.text()
+      await chip.trigger('click')
+      const inputEl = wrapper.find('textarea').element as HTMLTextAreaElement
+      expect(inputEl.value).toBe(chipText)
+    })
   })
 
   // ---- 消息发送 ----

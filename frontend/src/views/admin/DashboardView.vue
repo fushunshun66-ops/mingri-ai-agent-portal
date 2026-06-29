@@ -24,101 +24,71 @@
         <!-- 指标卡片 -->
         <div class="metric-cards">
           <div class="metric-card">
-            <div class="metric-icon agents">
-              <span>🤖</span>
+            <div class="metric-card__header">
+              <div class="metric-card__icon metric-card__icon--agents">
+                <span>🤖</span>
+              </div>
             </div>
-            <div class="metric-body">
-              <div class="metric-value">{{ overview.total_agents }}</div>
-              <div class="metric-label">Agent 总数</div>
-            </div>
+            <div class="metric-card__value">{{ overview.total_agents }}</div>
+            <div class="metric-card__label">Agent 总数</div>
           </div>
           <div class="metric-card">
-            <div class="metric-icon users">
-              <span>👥</span>
+            <div class="metric-card__header">
+              <div class="metric-card__icon metric-card__icon--users">
+                <span>👥</span>
+              </div>
             </div>
-            <div class="metric-body">
-              <div class="metric-value">{{ overview.active_users }}</div>
-              <div class="metric-label">活跃用户</div>
-            </div>
+            <div class="metric-card__value">{{ overview.active_users }}</div>
+            <div class="metric-card__label">活跃用户</div>
           </div>
           <div class="metric-card">
-            <div class="metric-icon sessions">
-              <span>💬</span>
+            <div class="metric-card__header">
+              <div class="metric-card__icon metric-card__icon--sessions">
+                <span>💬</span>
+              </div>
             </div>
-            <div class="metric-body">
-              <div class="metric-value">{{ overview.today_sessions }}</div>
-              <div class="metric-label">今日会话</div>
-            </div>
+            <div class="metric-card__value">{{ overview.today_sessions }}</div>
+            <div class="metric-card__label">今日会话</div>
           </div>
           <div class="metric-card">
-            <div class="metric-icon tokens">
-              <span>⚡</span>
+            <div class="metric-card__header">
+              <div class="metric-card__icon metric-card__icon--tokens">
+                <span>⚡</span>
+              </div>
             </div>
-            <div class="metric-body">
-              <div class="metric-value">{{ formatTokens(overview.total_tokens) }}</div>
-              <div class="metric-label">总 Token 消耗</div>
-            </div>
+            <div class="metric-card__value">{{ formatTokens(overview.total_tokens) }}</div>
+            <div class="metric-card__label">总 Token 消耗</div>
           </div>
         </div>
 
         <!-- 图表区：平台分布 + 趋势 -->
         <div class="charts-row">
           <div class="chart-panel">
-            <h3 class="chart-title">平台分布</h3>
-            <div v-if="overview.platform_distribution.length" class="bar-chart">
-              <div
-                v-for="item in platformBars"
-                :key="item.platform"
-                class="bar-row"
-              >
-                <span class="bar-label">{{ item.platform }}</span>
-                <div class="bar-track">
-                  <div
-                    class="bar-fill"
-                    :style="{ width: item.percent + '%' }"
-                  />
-                </div>
-                <span class="bar-value">{{ item.count }}</span>
-              </div>
-            </div>
+            <h3 class="chart-panel__title">平台分布</h3>
+            <v-chart
+              v-if="overview.platform_distribution.length"
+              class="chart-container"
+              :option="platformChartOption"
+              autoresize
+            />
             <el-empty v-else description="暂无平台分布数据" />
           </div>
 
           <div class="chart-panel">
-            <h3 class="chart-title">会话 / 消息趋势（近 30 天）</h3>
-            <div v-if="timeline.length" class="timeline-chart">
-              <div class="timeline-bars">
-                <div
-                  v-for="point in timelineBars"
-                  :key="point.label"
-                  class="timeline-col"
-                  :title="`${point.label}: 会话 ${point.sessions} / 消息 ${point.messages}`"
-                >
-                  <div class="bar-group">
-                    <div
-                      class="bar-sessions"
-                      :style="{ height: point.sessionH + '%' }"
-                    />
-                    <div
-                      class="bar-messages"
-                      :style="{ height: point.msgH + '%' }"
-                    />
-                  </div>
-                  <span class="timeline-label">{{ point.label }}</span>
-                </div>
-              </div>
-              <div class="timeline-legend">
-                <span class="legend-item"><span class="dot sessions" /> 会话</span>
-                <span class="legend-item"><span class="dot messages" /> 消息</span>
-              </div>
-            </div>
+            <h3 class="chart-panel__title">会话 / 消息趋势（近 30 天）</h3>
+            <v-chart
+              v-if="timeline.length"
+              class="chart-container"
+              :option="timelineChartOption"
+              autoresize
+            />
             <el-empty v-else description="暂无趋势数据" />
           </div>
         </div>
 
         <!-- 热门 Agent 表格 -->
         <div class="table-panel">
-          <h3 class="chart-title">热门 Agent</h3>
+          <h3 class="chart-panel__title">热门 Agent</h3>
           <el-table
             v-if="overview.top_agents.length"
             :data="overview.top_agents"
@@ -147,8 +117,29 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { use } from 'echarts/core'
+import { BarChart, LineChart } from 'echarts/charts'
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+} from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import VChart from 'vue-echarts'
+import type { EChartsOption } from 'echarts'
 import AppLayout from '@/components/AppLayout.vue'
 import { adminApi, type DashboardOverview, type TimelinePoint } from '@/api/admin'
+
+use([BarChart, LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
+
+const CHART_COLORS = {
+  primary: '#1a56db',
+  primaryLight: '#7baaf7',
+  green: '#059669',
+  orange: '#d97706',
+  gray: '#e5e7eb',
+  grayText: '#6b7280',
+}
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -162,42 +153,136 @@ const overview = ref<DashboardOverview>({
 })
 const timeline = ref<TimelinePoint[]>([])
 
-// 平台分布柱状图数据（计算百分比）
-const maxPlatformCount = computed(() => {
-  if (!overview.value.platform_distribution.length) return 1
-  return Math.max(...overview.value.platform_distribution.map((p) => p.count))
+const platformChartOption = computed<EChartsOption>(() => {
+  const data = overview.value.platform_distribution
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+    },
+    grid: {
+      left: '3%',
+      right: '8%',
+      bottom: '3%',
+      top: '3%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'value',
+      axisLine: { show: false },
+      splitLine: { lineStyle: { color: CHART_COLORS.gray } },
+      axisLabel: { color: CHART_COLORS.grayText },
+    },
+    yAxis: {
+      type: 'category',
+      data: data.map((p) => p.platform),
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: CHART_COLORS.grayText },
+    },
+    series: [
+      {
+        type: 'bar',
+        data: data.map((p) => p.count),
+        barWidth: 16,
+        itemStyle: {
+          borderRadius: [0, 4, 4, 0],
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 1,
+            y2: 0,
+            colorStops: [
+              { offset: 0, color: CHART_COLORS.primary },
+              { offset: 1, color: CHART_COLORS.primaryLight },
+            ],
+          },
+        },
+      },
+    ],
+  }
 })
 
-const platformBars = computed(() =>
-  overview.value.platform_distribution.map((p) => ({
-    ...p,
-    percent: Math.round((p.count / maxPlatformCount.value) * 100),
-  })),
-)
-
-// 时间线柱状图数据（计算相对高度）
-const maxSessions = computed(() => {
-  if (!timeline.value.length) return 1
-  return Math.max(...timeline.value.map((t) => t.sessions))
+const timelineChartOption = computed<EChartsOption>(() => {
+  const dates = timeline.value.map((t) => {
+    const d = new Date(t.date)
+    return `${d.getMonth() + 1}/${d.getDate()}`
+  })
+  return {
+    tooltip: {
+      trigger: 'axis',
+    },
+    legend: {
+      data: ['会话', '消息'],
+      bottom: 0,
+      textStyle: { color: CHART_COLORS.grayText },
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '12%',
+      top: '8%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: dates,
+      axisLine: { lineStyle: { color: CHART_COLORS.gray } },
+      axisLabel: { color: CHART_COLORS.grayText, fontSize: 11 },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: CHART_COLORS.gray } },
+      axisLabel: { color: CHART_COLORS.grayText },
+    },
+    series: [
+      {
+        name: '会话',
+        type: 'line',
+        smooth: true,
+        data: timeline.value.map((t) => t.sessions),
+        itemStyle: { color: CHART_COLORS.primary },
+        lineStyle: { color: CHART_COLORS.primary, width: 2 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(26, 86, 219, 0.25)' },
+              { offset: 1, color: 'rgba(26, 86, 219, 0.02)' },
+            ],
+          },
+        },
+      },
+      {
+        name: '消息',
+        type: 'line',
+        smooth: true,
+        data: timeline.value.map((t) => t.messages),
+        itemStyle: { color: CHART_COLORS.green },
+        lineStyle: { color: CHART_COLORS.green, width: 2 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(5, 150, 105, 0.2)' },
+              { offset: 1, color: 'rgba(5, 150, 105, 0.02)' },
+            ],
+          },
+        },
+      },
+    ],
+  }
 })
-
-const maxMessages = computed(() => {
-  if (!timeline.value.length) return 1
-  return Math.max(...timeline.value.map((t) => t.messages))
-})
-
-const timelineBars = computed(() =>
-  timeline.value.map((t) => {
-    const date = new Date(t.date)
-    const label = `${date.getMonth() + 1}/${date.getDate()}`
-    return {
-      ...t,
-      label,
-      sessionH: Math.round((t.sessions / maxSessions.value) * 100),
-      msgH: Math.round((t.messages / maxMessages.value) * 100),
-    }
-  }),
-)
 
 function formatTokens(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
@@ -237,244 +322,151 @@ async function fetchAll() {
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .page-title {
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-gray-800);
   margin: 0;
 }
 
 .loading-wrap {
-  padding: 40px 0;
+  padding: var(--space-12) 0;
 }
 
 .error-state {
-  padding: 60px 0;
+  padding: var(--space-16) 0;
   text-align: center;
 }
 
-/* ---- 指标卡片 ---- */
 .metric-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .metric-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
   display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-100);
+  transition: all var(--duration-normal) var(--ease-out);
 }
 
 .metric-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-100);
+  transform: translateY(-1px);
 }
 
-.metric-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.metric-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.metric-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
+  font-size: 20px;
 }
 
-.metric-icon.agents { background: #e8f4ff; }
-.metric-icon.users { background: #e8ffea; }
-.metric-icon.sessions { background: #fff3e8; }
-.metric-icon.tokens { background: #f3e8ff; }
-
-.metric-body {
-  flex: 1;
-  min-width: 0;
+.metric-card__icon--agents {
+  background: var(--color-primary-50);
 }
 
-.metric-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
+.metric-card__icon--users {
+  background: var(--color-accent-green-bg);
 }
 
-.metric-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: 2px;
+.metric-card__icon--sessions {
+  background: var(--color-accent-orange-bg);
 }
 
-/* ---- 图表区 ---- */
+.metric-card__icon--tokens {
+  background: var(--color-primary-100);
+}
+
+.metric-card__value {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--color-gray-900);
+  line-height: 1;
+}
+
+.metric-card__label {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--space-1);
+}
+
 .charts-row {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .chart-panel {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-100);
 }
 
-.chart-title {
-  font-size: 15px;
+.chart-panel__title {
+  font-size: var(--text-md);
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 16px;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-4);
 }
 
-/* 平台分布柱状条 */
-.bar-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.bar-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.bar-label {
-  width: 70px;
-  font-size: 13px;
-  color: var(--text-regular);
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.bar-track {
-  flex: 1;
-  height: 22px;
-  background: #f0f2f5;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #409eff, #66b1ff);
-  border-radius: 6px;
-  transition: width 0.4s ease;
-}
-
-.bar-value {
-  width: 36px;
-  font-size: 13px;
-  color: var(--text-primary);
-  font-weight: 600;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-/* 时间线柱状图 */
-.timeline-chart {
-  display: flex;
-  flex-direction: column;
-  height: 220px;
-}
-
-.timeline-bars {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  padding-bottom: 6px;
-}
-
-.timeline-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  cursor: default;
-}
-
-.bar-group {
-  flex: 1;
+.chart-container {
   width: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 2px;
+  height: 280px;
 }
 
-.bar-sessions {
-  width: 45%;
-  background: #409eff;
-  border-radius: 3px 3px 0 0;
-  min-height: 2px;
-  transition: height 0.3s ease;
-}
-
-.bar-messages {
-  width: 45%;
-  background: #67c23a;
-  border-radius: 3px 3px 0 0;
-  min-height: 2px;
-  transition: height 0.3s ease;
-}
-
-.timeline-label {
-  font-size: 10px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  white-space: nowrap;
-}
-
-.timeline-legend {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-}
-
-.dot.sessions { background: #409eff; }
-.dot.messages { background: #67c23a; }
-
-/* ---- 表格区 ---- */
 .table-panel {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-100);
+}
+
+.table-panel :deep(.el-table) {
+  --el-table-border-color: var(--color-gray-100);
+  --el-table-header-bg-color: var(--color-gray-50);
+  --el-table-row-hover-bg-color: var(--color-primary-50);
+}
+
+.table-panel :deep(.el-table th) {
+  font-weight: 600;
+  color: var(--color-gray-600);
+  font-size: var(--text-sm);
+}
+
+.table-panel :deep(.el-table td) {
+  color: var(--color-gray-700);
 }
 
 .rating {
-  color: #e6a23c;
+  color: var(--color-accent-orange);
   font-weight: 600;
 }
 
-/* ---- 响应式 ---- */
 @media (max-width: 960px) {
   .metric-cards {
     grid-template-columns: repeat(2, 1fr);

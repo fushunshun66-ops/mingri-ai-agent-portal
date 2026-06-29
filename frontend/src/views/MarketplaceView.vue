@@ -1,9 +1,13 @@
 <template>
+  <AppLayout>
   <div class="marketplace-page">
     <div class="page-header">
       <h1>Agent 市场</h1>
       <p>浏览和发现企业内的 AI Agent</p>
-      <div class="header-actions">
+    </div>
+
+    <div class="marketplace-body">
+      <div class="marketplace-toolbar">
         <el-input
           v-model="searchKeyword"
           placeholder="搜索 Agent..."
@@ -19,32 +23,42 @@
           创建 Agent
         </el-button>
       </div>
-    </div>
 
-    <div class="marketplace-body">
       <!-- 分类筛选 -->
       <div class="category-filter">
-        <el-button
-          :type="selectedCategory === '' ? 'primary' : 'default'"
-          size="small"
+        <button
+          type="button"
+          class="category-pill"
+          :class="{ 'category-pill--active': selectedCategory === '' }"
           @click="selectCategory('')"
         >
           全部
-        </el-button>
-        <el-button
+        </button>
+        <button
           v-for="cat in agentsStore.categories"
           :key="cat.id"
-          :type="selectedCategory === cat.id ? 'primary' : 'default'"
-          size="small"
+          type="button"
+          class="category-pill"
+          :class="{ 'category-pill--active': selectedCategory === cat.id }"
           @click="selectCategory(cat.id)"
         >
           {{ cat.name }}
-        </el-button>
+        </button>
       </div>
 
       <!-- Agent 卡片列表 -->
-      <div v-if="agentsStore.loading" class="loading-area">
-        <el-skeleton :rows="3" animated />
+      <div v-if="agentsStore.loading" class="agent-grid-skeleton">
+        <div v-for="n in 6" :key="n" class="skeleton-card">
+          <div class="skeleton-card__header">
+            <div class="skeleton-card__avatar" />
+            <div style="flex: 1">
+              <div class="skeleton-card__line skeleton-card__line--short" />
+              <div class="skeleton-card__line skeleton-card__line--medium" style="margin-top: 8px" />
+            </div>
+          </div>
+          <div class="skeleton-card__line" />
+          <div class="skeleton-card__line skeleton-card__line--medium" style="margin-top: 8px" />
+        </div>
       </div>
 
       <el-empty v-else-if="agentsStore.agents.length === 0" description="暂无 Agent" />
@@ -70,12 +84,14 @@
       </div>
     </div>
   </div>
+  </AppLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { useAgentsStore } from '@/stores/agents'
+import AppLayout from '@/components/AppLayout.vue'
 import AgentCard from '@/components/AgentCard.vue'
 
 const agentsStore = useAgentsStore()
@@ -126,38 +142,155 @@ onMounted(async () => {
   max-width: 1400px;
 }
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-  align-items: center;
+.page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0 0 var(--space-2);
 }
 
-.search-input {
-  max-width: 360px;
+.page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
 }
 
 .marketplace-body {
-  margin-top: 8px;
+  margin-top: var(--space-6);
+}
+
+.marketplace-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-100);
+}
+
+.marketplace-toolbar .search-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.marketplace-toolbar .search-input :deep(.el-input__wrapper) {
+  border-radius: var(--radius-md);
+  background: var(--color-gray-50);
+  box-shadow: none;
+  border: 1px solid var(--color-gray-200);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.marketplace-toolbar .search-input :deep(.el-input.is-focus .el-input__wrapper) {
+  background: var(--bg-surface);
+  border-color: var(--color-primary-300);
+  box-shadow: 0 0 0 2px var(--color-primary-100);
 }
 
 .category-filter {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
+}
+
+.category-pill {
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-gray-600);
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.category-pill:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+}
+
+.category-pill--active {
+  background: var(--color-primary-500);
+  color: #fff;
+  border-color: var(--color-primary-500);
+}
+
+.category-pill--active:hover {
+  background: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+}
+
+.agent-grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-5);
+}
+
+.skeleton-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  animation: fade-in-up var(--duration-slow) var(--ease-out) both;
+}
+
+.skeleton-card__header {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.skeleton-card__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-100) 0%,
+    var(--color-gray-50) 50%,
+    var(--color-gray-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card__line {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-100) 0%,
+    var(--color-gray-50) 50%,
+    var(--color-gray-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card__line--short {
+  width: 60%;
+}
+
+.skeleton-card__line--medium {
+  width: 80%;
 }
 
 .agent-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .pagination-area {
   display: flex;
   justify-content: center;
-  margin-top: 32px;
-  padding-bottom: 24px;
+  padding: var(--space-8) 0;
 }
 </style>

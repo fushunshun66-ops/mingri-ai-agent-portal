@@ -114,7 +114,7 @@ async function fetchRecent() {
     const resp = await agentsApi.getRecent(pageSize)
     if (resp.data.success && resp.data.data) {
       recent.value = resp.data.data
-      total.value = resp.data.length
+      total.value = resp.data.data?.length ?? 0
     }
   } catch {
     ElMessage.error('加载失败')

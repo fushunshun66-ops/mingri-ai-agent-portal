@@ -22,7 +22,7 @@ const mockStore = {
   streamingContent: '',
   hasSessions: true,
   hasMessages: true,
-  currentSessionId: 's1',
+  currentSessionId: 's1' as string | null,
   fetchSessions: vi.fn(),
   createSession: vi.fn(),
   selectSession: vi.fn(),

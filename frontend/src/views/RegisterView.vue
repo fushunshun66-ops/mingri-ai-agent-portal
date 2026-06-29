@@ -1,78 +1,85 @@
 <template>
   <div class="register-page">
-    <div class="register-card">
-      <h2 class="register-title">注册</h2>
-      <p class="register-subtitle">创建企业智能体统一门户账号</p>
+    <div class="register-wrapper">
+      <div class="register-brand">
+        <div class="register-brand__logo">企业智能体统一门户</div>
+        <p class="register-brand__slogan">连接企业内部 AI Agent，让智能协作触手可及</p>
+      </div>
 
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-position="top"
-        @submit.prevent="handleSubmit"
-      >
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="企业标识" prop="tenant_slug">
-              <el-input
-                v-model="form.tenant_slug"
-                placeholder="企业唯一标识（字母+数字）"
-                size="large"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="企业名称" prop="tenant_name">
-              <el-input
-                v-model="form.tenant_name"
-                placeholder="请输入企业名称"
-                size="large"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+      <div class="register-form-panel">
+        <h2>注册</h2>
+        <p>创建企业智能体统一门户账号</p>
 
-        <el-form-item label="用户名" prop="username">
-          <el-input
-            v-model="form.username"
-            placeholder="3-100个字符"
-            size="large"
-          />
-        </el-form-item>
+        <el-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          label-position="top"
+          @submit.prevent="handleSubmit"
+        >
+          <el-row :gutter="16">
+            <el-col :span="12">
+              <el-form-item label="企业标识" prop="tenant_slug">
+                <el-input
+                  v-model="form.tenant_slug"
+                  placeholder="企业唯一标识（字母+数字）"
+                  size="large"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="企业名称" prop="tenant_name">
+                <el-input
+                  v-model="form.tenant_name"
+                  placeholder="请输入企业名称"
+                  size="large"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-        <el-form-item label="邮箱" prop="email">
-          <el-input
-            v-model="form.email"
-            placeholder="请输入邮箱地址"
-            size="large"
-          />
-        </el-form-item>
+          <el-form-item label="用户名" prop="username">
+            <el-input
+              v-model="form.username"
+              placeholder="3-100个字符"
+              size="large"
+            />
+          </el-form-item>
 
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="8-128位，需含大小写字母和数字"
-            size="large"
-            show-password
-          />
-        </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input
+              v-model="form.email"
+              placeholder="请输入邮箱地址"
+              size="large"
+            />
+          </el-form-item>
 
-        <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            :loading="loading"
-            native-type="submit"
-            class="register-btn"
-          >
-            注册
-          </el-button>
-        </el-form-item>
-      </el-form>
+          <el-form-item label="密码" prop="password">
+            <el-input
+              v-model="form.password"
+              type="password"
+              placeholder="8-128位，需含大小写字母和数字"
+              size="large"
+              show-password
+            />
+          </el-form-item>
 
-      <div class="register-footer">
-        已有账号？<router-link to="/login">返回登录</router-link>
+          <el-form-item>
+            <el-button
+              type="primary"
+              size="large"
+              :loading="loading"
+              native-type="submit"
+              class="register-btn"
+            >
+              注册
+            </el-button>
+          </el-form-item>
+        </el-form>
+
+        <div class="register-footer">
+          已有账号？<router-link to="/login">返回登录</router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -149,44 +156,167 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-page);
+  position: relative;
+  overflow: hidden;
 }
 
-.register-card {
-  width: 520px;
-  padding: 40px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+.register-page::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -30%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, var(--color-primary-50) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
-.register-title {
-  font-size: 28px;
+.register-wrapper {
+  display: flex;
+  max-width: 900px;
+  width: 100%;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.register-brand {
+  flex: 1;
+  padding: var(--space-16) var(--space-12);
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.register-brand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.register-brand__logo {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  margin-bottom: var(--space-3);
+  position: relative;
+  z-index: 1;
+  text-wrap: balance;
+}
+
+.register-brand__slogan {
+  font-size: var(--text-base);
+  opacity: 0.75;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  max-width: 260px;
+  text-wrap: pretty;
+}
+
+.register-form-panel {
+  flex: 1;
+  padding: var(--space-16) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.register-form-panel h2 {
+  font-size: var(--text-2xl);
   font-weight: 700;
-  color: var(--text-primary);
-  text-align: center;
-  margin-bottom: 8px;
+  color: var(--color-gray-800);
+  margin-bottom: var(--space-2);
+  text-wrap: balance;
 }
 
-.register-subtitle {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-bottom: 32px;
+.register-form-panel p {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin-bottom: var(--space-8);
+  text-wrap: pretty;
+}
+
+.register-form-panel :deep(.el-input .el-input__wrapper) {
+  border-radius: var(--radius-md);
+  padding: 2px 12px;
+  box-shadow: 0 0 0 1px var(--color-gray-200);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.register-form-panel :deep(.el-input .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--color-gray-300);
+}
+
+.register-form-panel :deep(.el-input.is-focus .el-input__wrapper) {
+  box-shadow: 0 0 0 2px var(--color-primary-200);
 }
 
 .register-btn {
   width: 100%;
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  font-weight: 600;
+  margin-top: var(--space-2);
+  transition-property: transform, box-shadow;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-out);
+}
+
+.register-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);
+}
+
+.register-btn:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register-btn {
+    transition-property: box-shadow;
+  }
+
+  .register-btn:hover,
+  .register-btn:active {
+    transform: none;
+  }
 }
 
 .register-footer {
   text-align: center;
-  margin-top: 16px;
-  font-size: 14px;
-  color: var(--text-secondary);
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
 }
 
 .register-footer a {
-  color: var(--primary-color);
+  color: var(--color-primary-500);
+}
+
+@media (max-width: 768px) {
+  .register-brand {
+    display: none;
+  }
+
+  .register-wrapper {
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+  }
+
+  .register-form-panel {
+    padding: var(--space-8) var(--space-6);
+  }
 }
 </style>

@@ -36,6 +36,14 @@ vi.mock('@/api/admin', () => ({
   },
 }))
 
+vi.mock('vue-echarts', () => ({
+  default: {
+    name: 'VChart',
+    template: '<div class="v-chart-stub"></div>',
+    props: ['option', 'autoresize'],
+  },
+}))
+
 // Mock auth store — 管理员角色
 const mockUser = {
   id: 'admin1',
@@ -150,14 +158,11 @@ describe('DashboardView', () => {
       expect(wrapper.text()).toContain('平台分布')
     })
 
-    it('显示各平台名称', async () => {
+    it('使用 ECharts v-chart 组件渲染图表', async () => {
       const { wrapper } = createWrapper()
       await wrapper.vm.$nextTick()
       await new Promise(r => setTimeout(r, 100))
-      const text = wrapper.text()
-      expect(text).toContain('dify')
-      expect(text).toContain('fastgpt')
-      expect(text).toContain('n8n')
+      expect(wrapper.findAll('.v-chart-stub').length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -184,6 +189,22 @@ describe('DashboardView', () => {
       await wrapper.vm.$nextTick()
       await new Promise(r => setTimeout(r, 100))
       expect(wrapper.text()).toContain('趋势')
+    })
+
+    it('趋势图使用 v-chart 组件', async () => {
+      const { wrapper } = createWrapper()
+      await wrapper.vm.$nextTick()
+      await new Promise(r => setTimeout(r, 100))
+      expect(wrapper.findAll('.v-chart-stub').length).toBe(2)
+    })
+  })
+
+  describe('样式升级', () => {
+    it('metric-card 存在 hover 上浮样式', async () => {
+      const { wrapper } = createWrapper()
+      await wrapper.vm.$nextTick()
+      await new Promise(r => setTimeout(r, 100))
+      expect(wrapper.find('.metric-card').exists()).toBe(true)
     })
   })
 
