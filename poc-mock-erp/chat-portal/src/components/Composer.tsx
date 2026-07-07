@@ -103,10 +103,10 @@ export function Composer({
   }, [value]);
 
   useEffect(() => {
-    if (voiceRecorder?.partialText) {
+    if (voiceRecorder?.status === "recording" && voiceRecorder.partialText) {
       onChange(voiceRecorder.partialText);
     }
-  }, [voiceRecorder?.partialText]);
+  }, [voiceRecorder?.status, voiceRecorder?.partialText]);
 
   const onTextareaKey = (e: React.KeyboardEvent) => {
     if (showAgentPicker) {

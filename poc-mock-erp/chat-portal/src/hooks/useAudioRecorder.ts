@@ -25,10 +25,6 @@ export function useAudioRecorder(): AudioRecorderHandle {
     });
   }
 
-  function appendFinal(text: string) {
-    finalRef.current = finalRef.current ? `${finalRef.current} ${text}` : text;
-    partialRef.current = "";
-  }
 
   const cleanup = useCallback(() => {
     if (nodeRef.current) {
@@ -101,19 +97,8 @@ export function useAudioRecorder(): AudioRecorderHandle {
             return;
           }
           if (msg.text) {
-            const isOffline = /offline/i.test(msg.mode || "");
-            if (msg.is_final) {
-              if (isOffline) {
-                finalRef.current = msg.text;
-              } else {
-                appendFinal(msg.text);
-              }
-              partialRef.current = "";
-              flushPartial();
-            } else {
-              partialRef.current = msg.text;
-              flushPartial();
-            }
+            partialRef.current = msg.text;
+            flushPartial();
           }
         } catch {
           /* ignore non-JSON */
@@ -154,9 +139,9 @@ export function useAudioRecorder(): AudioRecorderHandle {
     cleanup();
     setStatus("idle");
     statusRef.current = "idle";
+    const result = finalRef.current || partialRef.current;
     setPartialText("");
     partialRef.current = "";
-    const result = finalRef.current || partialRef.current;
     return result;
   }, [status, cleanup]);
 

@@ -65,6 +65,7 @@ export function createAsrProxy(clientWs, asrConfig) {
         if (msg.text) {
           msg.text = msg.text.replace(SENSEVOICE_TAG_RE, "").trim();
         }
+        console.log("[asr-proxy] fwd to client:", JSON.stringify({text:msg.text?.slice(0,50),is_final:msg.is_final,mode:msg.mode}));
         sendToClient(msg);
       } catch (_) {
         console.debug("[asr-proxy] 非 JSON 帧:", data.toString().slice(0, 100));
@@ -92,6 +93,8 @@ export function createAsrProxy(clientWs, asrConfig) {
       if (asrWs && asrWs.readyState === WebSocket.OPEN) {
         asrWs.send(data);
         resetTimeout();
+      } else {
+        console.log("[asr-proxy] binary dropped, asrWs state:", asrWs?.readyState);
       }
       return;
     }
