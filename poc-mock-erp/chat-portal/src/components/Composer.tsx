@@ -102,11 +102,10 @@ export function Composer({
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, [value]);
 
-  useEffect(() => {
-    if (voiceRecorder?.status === "recording" && voiceRecorder.partialText) {
-      onChange(voiceRecorder.partialText);
-    }
-  }, [voiceRecorder?.status, voiceRecorder?.partialText]);
+  const isRecording = voiceRecorder?.status === "recording";
+  const textareaPlaceholder = isRecording
+    ? "正在录音，停止后将显示识别文字…"
+    : placeholder;
 
   const onTextareaKey = (e: React.KeyboardEvent) => {
     if (showAgentPicker) {
@@ -271,12 +270,17 @@ export function Composer({
             <button className="voice-error-close" onClick={() => voiceRecorder.dismissError()} aria-label="关闭">✕</button>
           </div>
         )}
+        {isRecording && (
+          <div className="voice-recording-hint" aria-live="polite">
+            正在聆听… 识别结果将在停止录音后填入输入框
+          </div>
+        )}
         <textarea
           ref={textareaRef}
-          value={value}
-          readOnly={voiceRecorder?.status === "recording"}
+          value={isRecording ? "" : value}
+          readOnly={isRecording}
           aria-label="消息输入"
-          placeholder={placeholder}
+          placeholder={textareaPlaceholder}
           onChange={(e) => {
             onChange(e.target.value);
             syncMentionRange(e.target.value, e.target.selectionStart ?? e.target.value.length);

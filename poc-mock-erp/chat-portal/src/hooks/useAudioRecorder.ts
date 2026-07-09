@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AudioRecorderHandle, RecorderStatus } from "../types/voice";
 
+const STOP_WAIT_MS = 4500;
+
 export function useAudioRecorder(): AudioRecorderHandle {
   const [status, setStatus] = useState<RecorderStatus>("idle");
   const [partialText, setPartialText] = useState("");
@@ -15,6 +17,8 @@ export function useAudioRecorder(): AudioRecorderHandle {
   const rafRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statusRef = useRef<RecorderStatus>("idle");
+  const stopResolveRef = useRef<((text: string) => void) | null>(null);
+  const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSupported = !!(navigator.mediaDevices && window.AudioContext);
 
@@ -25,6 +29,16 @@ export function useAudioRecorder(): AudioRecorderHandle {
     });
   }
 
+  function resolveStop() {
+    if (!stopResolveRef.current) return;
+    const text = finalRef.current || partialRef.current;
+    stopResolveRef.current(text);
+    stopResolveRef.current = null;
+    if (stopTimerRef.current) {
+      clearTimeout(stopTimerRef.current);
+      stopTimerRef.current = null;
+    }
+  }
 
   const cleanup = useCallback(() => {
     if (nodeRef.current) {
@@ -89,15 +103,20 @@ export function useAudioRecorder(): AudioRecorderHandle {
         try {
           const msg = JSON.parse(evt.data);
           if (msg.type === "ready") return;
-          if (msg.type === "done") return;
+          if (msg.type === "done") {
+            resolveStop();
+            return;
+          }
           if (msg.type === "error") {
             setError(msg.message);
             setStatus("error");
             statusRef.current = "error";
+            resolveStop();
             return;
           }
           if (msg.text) {
             partialRef.current = msg.text;
+            if (msg.is_final) finalRef.current = msg.text;
             flushPartial();
           }
         } catch {
@@ -106,6 +125,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
       };
 
       ws.onclose = () => {
+        resolveStop();
         if (statusRef.current === "recording") setStatus("error");
       };
 
@@ -131,21 +151,38 @@ export function useAudioRecorder(): AudioRecorderHandle {
   }, [status, cleanup]);
 
   const stop = useCallback(async () => {
-    if (status !== "recording") return finalRef.current;
-    const ws = wsRef.current;
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "stop" }));
-    }
+    if (status !== "recording") return finalRef.current || partialRef.current;
+
+    const spoken = await new Promise<string>((resolve) => {
+      stopResolveRef.current = resolve;
+      stopTimerRef.current = setTimeout(() => {
+        resolve(finalRef.current || partialRef.current);
+        stopResolveRef.current = null;
+        stopTimerRef.current = null;
+      }, STOP_WAIT_MS);
+
+      const ws = wsRef.current;
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "stop" }));
+      } else {
+        resolveStop();
+      }
+    });
+
     cleanup();
     setStatus("idle");
     statusRef.current = "idle";
-    const result = finalRef.current || partialRef.current;
     setPartialText("");
     partialRef.current = "";
-    return result;
+    return spoken;
   }, [status, cleanup]);
 
   const cancel = useCallback(() => {
+    if (stopTimerRef.current) {
+      clearTimeout(stopTimerRef.current);
+      stopTimerRef.current = null;
+    }
+    stopResolveRef.current = null;
     cleanup();
     setStatus("idle");
     statusRef.current = "idle";

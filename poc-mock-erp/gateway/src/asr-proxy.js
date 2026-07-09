@@ -12,20 +12,30 @@ const HANDSHAKE_MSG = JSON.stringify({
   audio_fs: 16000,
 });
 const TIMEOUT_MS = 60000;
+const STOP_WAIT_MS = 4000;
 const SENSEVOICE_TAG_RE = /<\|[^|]+\|>/g;
 
 export function createAsrProxy(clientWs, asrConfig) {
   let asrWs = null;
   let timeout = null;
+  let stopTimeout = null;
+  let stopping = false;
   let closed = false;
 
   function cleanup() {
     if (closed) return;
     closed = true;
     clearTimeout(timeout);
+    clearTimeout(stopTimeout);
     if (asrWs && asrWs.readyState === WebSocket.OPEN) {
       try { asrWs.close(); } catch (_) { /* ignore */ }
     }
+  }
+
+  function finishStop() {
+    if (closed) return;
+    sendToClient({ type: "done" });
+    cleanup();
   }
 
   function resetTimeout() {
@@ -65,8 +75,12 @@ export function createAsrProxy(clientWs, asrConfig) {
         if (msg.text) {
           msg.text = msg.text.replace(SENSEVOICE_TAG_RE, "").trim();
         }
-        console.log("[asr-proxy] fwd to client:", JSON.stringify({text:msg.text?.slice(0,50),is_final:msg.is_final,mode:msg.mode}));
+        console.log("[asr-proxy] fwd to client:", JSON.stringify({ text: msg.text?.slice(0, 50), is_final: msg.is_final, mode: msg.mode }));
         sendToClient(msg);
+        if (stopping && msg.text) {
+          clearTimeout(stopTimeout);
+          finishStop();
+        }
       } catch (_) {
         console.debug("[asr-proxy] 非 JSON 帧:", data.toString().slice(0, 100));
       }
@@ -79,7 +93,11 @@ export function createAsrProxy(clientWs, asrConfig) {
 
     asrWs.on("close", () => {
       if (!closed) {
-        sendToClient({ type: "error", message: "语音识别服务暂未就绪，请稍后重试" });
+        if (stopping) {
+          finishStop();
+        } else {
+          sendToClient({ type: "error", message: "语音识别服务暂未就绪，请稍后重试" });
+        }
       }
       cleanup();
     });
@@ -103,12 +121,13 @@ export function createAsrProxy(clientWs, asrConfig) {
     try { msg = JSON.parse(data.toString()); } catch (_) { return; }
 
     if (msg.type === "stop") {
+      stopping = true;
       if (asrWs && asrWs.readyState === WebSocket.OPEN) {
         asrWs.send(JSON.stringify({ is_speaking: false }));
         sendSilenceFrames();
       }
-      sendToClient({ type: "done" });
-      cleanup();
+      clearTimeout(stopTimeout);
+      stopTimeout = setTimeout(finishStop, STOP_WAIT_MS);
     }
   });
 
