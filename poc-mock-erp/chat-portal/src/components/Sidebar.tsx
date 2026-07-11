@@ -1,5 +1,6 @@
 import type { Flow, Session } from "../types/message";
 import mrjtLogo from "../assets/mrjt-logo.png";
+import { Button } from "@/components/ui/button";
 import { FLOW_META } from "./flowMeta";
 import { IconNew } from "./icons";
 
@@ -75,10 +76,10 @@ export function Sidebar({
         </div>
       </button>
 
-      <button type="button" className="new-chat-btn" onClick={onGoHome}>
+      <Button className="new-chat-btn" onClick={onGoHome}>
         <IconNew />
         新建业务办理
-      </button>
+      </Button>
 
       {showFlowPicker && (
         <nav className="sidebar-modules" aria-label="业务模块">

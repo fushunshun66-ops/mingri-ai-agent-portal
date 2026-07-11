@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 
 export function DocCardFoot({
   actions,
@@ -29,14 +30,14 @@ export function DocActionButton({
   onClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant={primary ? "default" : "outline"}
       className={`doc-btn${primary ? " doc-btn-primary" : ""}${filled ? " doc-btn-filled" : ""}`}
       disabled={disabled}
       onClick={onClick}
     >
       {filled && <span className="doc-btn-check" aria-hidden>✓</span>}
       <span>{label}</span>
-    </button>
+    </Button>
   );
 }

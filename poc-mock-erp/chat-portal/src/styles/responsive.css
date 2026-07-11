@@ -1,0 +1,244 @@
+﻿@media (max-width: 980px) {
+  .workbench-modules { grid-template-columns: 1fr; }
+  .workbench-example-grid { grid-template-columns: 1fr; }
+  .workbench-head { flex-direction: column; }
+  .workbench-stats { width: 100%; justify-content: stretch; }
+  .stat-card { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* =========================================
+   响应式：平板（≤1024px）
+   ========================================= */
+@media (max-width: 1024px) {
+  /* 首页模块网格 — 三列变两列 */
+  .workbench-modules {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* TopBar 内边距缩减 */
+  .topbar {
+    padding: 0 20px;
+  }
+
+  /* Composer 内边距缩减 */
+  .composer-wrap {
+    padding: 8px 20px 16px;
+  }
+}
+
+/* =========================================
+   响应式：移动端（≤768px）— Sidebar overlay
+   ========================================= */
+@media (max-width: 768px) {
+  /* ---- 汉堡按钮 ---- */
+  .topbar-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    color: var(--text);
+    border: 0;
+    background: none;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  /* ---- 面包屑截断 ---- */
+  .topbar-crumb {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100vw - 180px);
+  }
+  .topbar-crumb-sep,
+  .topbar-crumb-current {
+    flex-shrink: 0;
+  }
+  .topbar-crumb > span:first-child {
+    flex-shrink: 0;
+  }
+  .topbar-crumb > span:nth-child(3) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---- TopBar 内边距 ---- */
+  .topbar {
+    padding: 0 12px;
+  }
+
+  /* ---- Sidebar overlay ---- */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: 272px;
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overscroll-behavior: contain;
+    overflow-y: auto;
+    box-shadow: var(--sidebar-shadow);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* ---- Backdrop ---- */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .sidebar-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ---- body 滚动锁定 ---- */
+  body.sidebar-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* ---- 触摸优化 ---- */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .send-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* ---- iOS 视口高度 ---- */
+  .app {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* ---- Composer ---- */
+  .composer-wrap {
+    padding: 8px 12px 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ---- @选择器弹窗 ---- */
+  .composer-agent-picker {
+    left: 4px;
+    right: 4px;
+  }
+}
+
+/* =========================================
+   响应式：手机（≤480px）
+   ========================================= */
+@media (max-width: 480px) {
+  /* ---- TopBar ---- */
+  .topbar {
+    padding: 0 10px;
+    height: 48px;
+  }
+
+  /* ---- 面包屑进一步截断 ---- */
+  .topbar-crumb {
+    max-width: calc(100vw - 150px);
+    font-size: 13px;
+  }
+  .topbar-session {
+    font-size: 12px;
+  }
+  .topbar-right {
+    gap: 6px;
+  }
+
+  /* ---- 首页模块单列 ---- */
+  .workbench-modules {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .workbench-example-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- 字段网格纵向堆叠 ---- */
+  .doc-field-row {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+    padding: 10px 0;
+  }
+
+  /* ---- 卡片按钮全宽 ---- */
+  .doc-card .doc-btn {
+    width: 100%;
+  }
+
+  /* ---- 表格横向溢出容器 ---- */
+  .doc-section-table-wrap {
+    overflow: hidden;
+    overflow-x: auto;
+  }
+  .doc-section-table {
+    min-width: max-content;
+  }
+
+  /* ---- Composer ---- */
+  .composer-wrap {
+    padding: 6px 8px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .composer {
+    padding: 8px 10px 6px;
+    border-radius: var(--radius);
+  }
+  .composer textarea {
+    font-size: 16px;
+  }
+  .composer-quick-prompts {
+    margin-bottom: 8px;
+  }
+
+  /* ---- @选择器弹窗 ---- */
+  .composer-agent-picker {
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    bottom: calc(100% + 4px);
+  }
+
+  /* ---- 消息列表内边距 ---- */
+  .message-list-inner {
+    padding: 12px 12px 4px;
+  }
+
+  /* ---- 首页工作台 ---- */
+  .workbench {
+    padding: 16px 12px 12px;
+  }
+
+  /* ---- Content max-width 释放 ---- */
+  .composer-wrap-home {
+    max-width: none;
+    padding: 0 8px 12px;
+  }
+}

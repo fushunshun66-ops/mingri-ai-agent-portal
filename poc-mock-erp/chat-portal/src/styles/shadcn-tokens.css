@@ -1,0 +1,59 @@
+﻿/* shadcn/ui 变量 → 项目 tokens 映射 */
+/* 所有 shadcn 变量引用项目现有 CSS 自定义属性 */
+/* 保留暗色模式预留（.dark 类）供 Phase 4 使用 */
+
+:root {
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel);
+  --popover-foreground: var(--text);
+  --primary: var(--primary);
+  --primary-foreground: #ffffff;
+  --secondary: var(--primary-soft);
+  --secondary-foreground: var(--primary);
+  --muted: var(--muted);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--primary-soft);
+  --accent-foreground: var(--primary);
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--primary);
+  --radius: var(--radius);
+  --chart-1: var(--accent-blue);
+  --chart-2: var(--accent-orange);
+  --chart-3: var(--accent-purple);
+  --chart-4: var(--accent-blue);
+  --chart-5: var(--text-secondary);
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--primary-soft);
+  --sidebar-accent-foreground: var(--primary);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--primary);
+}
+
+/* 暗色模式 */
+.dark {
+  --background: var(--bg);
+  --foreground: var(--text);
+  --primary: var(--primary);
+  --primary-foreground: #0d0d1a;
+  --secondary: var(--primary-soft);
+  --secondary-foreground: var(--primary);
+  --muted: var(--line);
+  --muted-foreground: var(--muted);
+  --accent: var(--primary-soft);
+  --accent-foreground: var(--primary);
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--line-strong);
+  --input: var(--line-strong);
+  --ring: var(--primary);
+  --radius: var(--radius);
+}

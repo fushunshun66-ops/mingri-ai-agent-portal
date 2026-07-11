@@ -3,6 +3,7 @@ import type { ChoiceComposerChip } from "../types/choice";
 import type { Flow, UploadedFile } from "../types/message";
 import { filterFlowsForMention, findFlowByKey, getMentionRange } from "../utils/agentMention";
 import { hasComposerPayload } from "../utils/choiceComposer";
+import { Button } from "@/components/ui/button";
 import { ComposerAgentPicker } from "./ComposerAgentPicker";
 import { ComposerQuickPrompts, type QuickPrompt } from "./ComposerQuickPrompts";
 import { IconAttach, IconClose, IconMic, IconSend } from "./icons";
@@ -292,8 +293,9 @@ export function Composer({
         <div className="composer-toolbar">
           <div className="composer-tools-left">
             {voiceRecorder?.isSupported && (
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 className={`tool-btn ${voiceRecorder.status === "recording" ? "tool-btn-recording" : ""}`}
                 title={voiceRecorder.status === "recording" ? `停止录音 · ${voiceRecorder.durationSec}s` : "语音输入"}
                 disabled={voiceRecorder.status === "requesting" || voiceRecorder.status === "error" || sending || uploading}
@@ -313,17 +315,18 @@ export function Composer({
                 }}
               >
                 {voiceRecorder.status === "recording" ? `● ${formatDuration(voiceRecorder.durationSec)}` : <IconMic />}
-              </button>
+              </Button>
             )}
             {voiceRecorder?.isSupported && voiceRecorder.status === "recording" && (
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 className="tool-btn tool-btn-cancel"
                 title="取消录音"
                 onClick={() => voiceRecorder.cancel()}
               >
                 取消
-              </button>
+              </Button>
             )}
             {canAttach && (
               <>
@@ -334,8 +337,9 @@ export function Composer({
                   style={{ display: "none" }}
                   onChange={(e) => onPickFiles(e.target.files)}
                 />
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="tool-btn"
                   title="上传文件（提货函 / 合同附件）"
                   disabled={uploading}
@@ -343,19 +347,19 @@ export function Composer({
                 >
                   <IconAttach />
                   <span>{uploading ? "上传中…" : "附件"}</span>
-                </button>
+                </Button>
               </>
             )}
           </div>
-          <button
-            type="button"
+          <Button
             className="send-btn"
+            size="icon"
             disabled={sending || uploading || !canSend}
             onClick={() => onSend()}
             aria-label="发送"
           >
             <IconSend />
-          </button>
+          </Button>
         </div>
       </div>
       <div className="composer-hint">
