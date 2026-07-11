@@ -6,10 +6,49 @@ import { TopBar } from "./components/TopBar";
 import { Composer } from "./components/Composer";
 import { useChatSession } from "./hooks/useChatSession";
 import { useAudioRecorder } from "./hooks/useAudioRecorder";
+import { useState, useCallback, useEffect } from "react";
 
 export default function App() {
   const chat = useChatSession();
   const voice = useAudioRecorder();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
+
+  const handleGoHome = () => {
+    chat.goHome();
+    setSidebarOpen(false);
+  };
+  const handleNewSession = (flowKey: string) => {
+    chat.handleNewSession(flowKey);
+    setSidebarOpen(false);
+  };
+  const handleLoadSession = (id: string) => {
+    chat.loadSession(id);
+    setSidebarOpen(false);
+  };
+
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.classList.add("sidebar-open");
+    } else {
+      document.body.classList.remove("sidebar-open");
+    }
+    return () => {
+      document.body.classList.remove("sidebar-open");
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
 
   const composer = chat.showComposer && (
     <Composer
@@ -50,19 +89,23 @@ export default function App() {
         showFlowPicker={!chat.isHome}
         sending={chat.sending}
         uploading={chat.uploading}
-        onGoHome={chat.goHome}
-        onNewSession={chat.handleNewSession}
-        onLoadSession={chat.loadSession}
+        onGoHome={handleGoHome}
+        onNewSession={handleNewSession}
+        onLoadSession={handleLoadSession}
         flows={chat.flows}
+        isOpen={sidebarOpen}
+        onClose={closeSidebar}
       />
 
-      <main className={`main ${chat.isHome ? "main-home" : ""}`}>
+      <main className={`main ${chat.isHome ? "main-home" : ""}`} aria-hidden={sidebarOpen}>
         {!chat.isHome && (
           <TopBar
             flowName={chat.activeFlow?.name}
             flowKey={chat.activeFlow?.flowKey}
             sessionTitle={chat.activeSession?.title}
             mode={chat.mode}
+            onMenuToggle={toggleSidebar}
+            isSidebarOpen={sidebarOpen}
           />
         )}
 

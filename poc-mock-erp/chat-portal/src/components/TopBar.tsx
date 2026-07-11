@@ -19,16 +19,31 @@ export function TopBar({
   flowKey,
   sessionTitle,
   mode,
+  onMenuToggle,
+  isSidebarOpen,
 }: {
   flowName?: string;
   flowKey?: string;
   sessionTitle?: string | null;
   mode?: string;
+  onMenuToggle: () => void;
+  isSidebarOpen?: boolean;
 }) {
   const meta = flowKey ? FLOW_META[flowKey] : null;
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button
+          type="button"
+          className="topbar-menu-btn"
+          onClick={onMenuToggle}
+          aria-label={isSidebarOpen ? "关闭菜单" : "打开菜单"}
+          aria-expanded={isSidebarOpen}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </button>
         <nav className="topbar-crumb" aria-label="面包屑">
           <span>智能业务入口</span>
           {meta && (

@@ -41,6 +41,8 @@ export function Sidebar({
   onNewSession,
   onLoadSession,
   flows,
+  isOpen,
+  onClose,
 }: {
   sessions: Session[];
   activeId: string | null;
@@ -52,13 +54,20 @@ export function Sidebar({
   onNewSession: (flowKey: string) => void;
   onLoadSession: (id: string) => void;
   flows: Flow[];
+  isOpen: boolean;
+  onClose: () => void;
 }) {
   const runningCount = sessions.filter(
     (s) => resolveSessionStatus(s.id, activeId, sending, uploading) === "running",
   ).length;
 
   return (
-    <aside className="sidebar">
+    <>
+      <div
+        className={`sidebar-backdrop${isOpen ? " visible" : ""}`}
+        onClick={onClose}
+      />
+      <aside className={`sidebar${isOpen ? " open" : ""}`}>
       <button type="button" className="brand" onClick={onGoHome} aria-label="返回首页">
         <img src={mrjtLogo} alt="明日控股" className="brand-logo" />
         <div className="brand-text">
@@ -139,5 +148,6 @@ export function Sidebar({
         </div>
       </div>
     </aside>
+    </>
   );
 }
