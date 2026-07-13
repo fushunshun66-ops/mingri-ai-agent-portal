@@ -7,7 +7,6 @@ import type { Flow } from "../types/message";
 import { groupTraces, normalizeLiveTrace } from "../utils/chatUtils";
 import { composeChoiceComposerContent, hasComposerPayload } from "../utils/choiceComposer";
 import { parseAgentMentionFromContent } from "../utils/agentMention";
-import { isSessionResetAck, SESSION_RESET_NOTICE } from "../utils/sessionReset";
 
 /** useChat 从外部 Hook 读取的跨域依赖 */
 export interface ChatCrossDeps {
@@ -80,29 +79,6 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
 
       setError(null);
       setLiveTraces([]);
-
-      // 已有会话时：「好的 / 完成」等收尾语 → 轮换中台 sessionSn
-      if (
-        deps.activeId &&
-        isSessionResetAck(content) &&
-        chipList.length === 0 &&
-        !hasLocal &&
-        !hasUploaded
-      ) {
-        setSending(true);
-        try {
-          const { messages: refreshed } = await api.resetSession(deps.activeId, content);
-          setMessages(refreshed);
-          deps.clearChoiceFill();
-          setIntentNotice(SESSION_RESET_NOTICE);
-          setTimeout(() => setIntentNotice(null), 4000);
-        } catch (e) {
-          setError((e as Error).message);
-        } finally {
-          setSending(false);
-        }
-        return;
-      }
 
       let sessionId = deps.activeId;
       let sentFiles = deps.attachments;

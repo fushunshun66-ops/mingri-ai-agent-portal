@@ -1,16 +1,29 @@
 import { FLOW_META } from "./flowMeta";
+import { Badge } from "@/components/ui/badge";
 
 function ModeBadge({ mode }: { mode?: string }) {
   if (!mode) return null;
   const isLive = mode === "live";
   const isOffline = mode === "offline";
   const label = isLive ? "中台已连接" : isOffline ? "中台离线" : mode;
-  const variant = isLive ? "live" : isOffline ? "offline" : "other";
-  return (
-    <span className={`topbar-mode topbar-mode--${variant}`} title={isLive ? "已连接智能体中台，实时处理" : undefined}>
-      <span className="topbar-mode-dot" aria-hidden />
+  
+  if (isLive) return (
+    <Badge variant="outline" className="topbar-mode topbar-mode--live inline-flex items-center gap-[6px] text-[11px] font-semibold px-[10px] py-[3px] bg-[#eef8f0] text-[#1a7f37] border-[rgba(26,127,55,0.22)] rounded">
+      <span className="topbar-mode-dot" style={{ background: "#1a7f37" }} aria-hidden />
       {label}
-    </span>
+    </Badge>
+  );
+  if (isOffline) return (
+    <Badge variant="destructive" className="topbar-mode topbar-mode--offline inline-flex items-center gap-[6px] text-[11px] font-semibold px-[10px] py-[3px] bg-[#fff0f0] border-[rgba(255,77,79,0.25)] rounded">
+      <span className="topbar-mode-dot" style={{ background: "#ff4d4f" }} aria-hidden />
+      {label}
+    </Badge>
+  );
+  return (
+    <Badge variant="outline" className="topbar-mode topbar-mode--other inline-flex items-center gap-[6px] text-[11px] font-semibold px-[10px] py-[3px] bg-[#fafafa] rounded">
+      <span className="topbar-mode-dot" style={{ background: "#999" }} aria-hidden />
+      {label}
+    </Badge>
   );
 }
 
@@ -64,7 +77,21 @@ export function TopBar({
         )}
       </div>
       <div className="topbar-right">
-        {meta && <span className={`topbar-tag ${meta.accent}`}>{meta.label}</span>}
+        {meta && (() => {
+          const isBlue = meta.accent === "cap-accent-blue";
+          return (
+            <Badge
+              variant={isBlue ? "secondary" : "outline"}
+              className="text-[10px] font-semibold px-[6px] py-[1px]"
+              style={isBlue ? { color: "var(--primary)" } : (!isBlue ? (meta.accent === "cap-accent-orange"
+                ? { backgroundColor: "var(--accent-orange-soft)", color: "var(--accent-orange)" }
+                : { backgroundColor: "var(--accent-purple-soft)", color: "var(--accent-purple)" }
+              ) : undefined)}
+            >
+              {meta.label}
+            </Badge>
+          );
+        })()}
         <ModeBadge mode={mode} />
       </div>
     </header>

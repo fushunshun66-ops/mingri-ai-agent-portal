@@ -80,7 +80,7 @@ function orderColumns(columnOrder, rows) {
   if (!columnOrder?.length) {
     ordered = fromRows;
   } else {
-    ordered = [...columnOrder.filter((c) => fromRows.includes(c)), ...fromRows.filter((c) => !columnOrder.includes(c))];
+    ordered = columnOrder.filter((c) => fromRows.includes(c));
   }
   const auditResultCols = new Set(["审核结果", "结论", "风险等级"]);
   const rest = ordered.filter((c) => !auditResultCols.has(c));

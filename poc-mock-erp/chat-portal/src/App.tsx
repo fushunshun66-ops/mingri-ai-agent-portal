@@ -6,7 +6,9 @@ import { TopBar } from "./components/TopBar";
 import { Composer } from "./components/Composer";
 import { useChatSession } from "./hooks/useChatSession";
 import { useAudioRecorder } from "./hooks/useAudioRecorder";
-import { useState, useCallback, useEffect } from "react";
+import { useKeyboardViewport } from "./hooks/useKeyboardViewport";
+import { useMediaQuery } from "./hooks/useMediaQuery";
+import { useState, useCallback } from "react";
 
 export default function App() {
   const chat = useChatSession();
@@ -15,6 +17,9 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const keyboardHeight = useKeyboardViewport(isMobile);
 
   const handleGoHome = () => {
     chat.goHome();
@@ -28,27 +33,6 @@ export default function App() {
     chat.loadSession(id);
     setSidebarOpen(false);
   };
-
-  useEffect(() => {
-    if (sidebarOpen) {
-      document.body.classList.add("sidebar-open");
-    } else {
-      document.body.classList.remove("sidebar-open");
-    }
-    return () => {
-      document.body.classList.remove("sidebar-open");
-    };
-  }, [sidebarOpen]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [sidebarOpen]);
 
   const composer = chat.showComposer && (
     <Composer
@@ -120,7 +104,7 @@ export default function App() {
           </div>
         )}
 
-        <div className="chat-area">
+        <div className="chat-area" style={isMobile && keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}>
           <div className={`chat-main ${chat.isHome ? "chat-main-home" : ""}`}>
             {chat.isHome ? (
               <>

@@ -19,6 +19,7 @@ import { ChoiceBlock } from "./blocks/ChoiceBlock";
 import { renderSalesOrderDocGroup } from "./doc-groups/SalesOrderDocGroup";
 import { renderShipmentDocGroup } from "./doc-groups/ShipmentDocGroup";
 import { renderContractReviewDocGroup } from "./doc-groups/ContractReviewDocGroup";
+import { sanitizeFormFields } from "../../utils/formDisplay";
 
 export function BlockRenderer({
   messageId,
@@ -29,6 +30,7 @@ export function BlockRenderer({
   onChoiceSelect,
   selectedBySlot,
   formActionDisabled,
+  skipMarkdownChoiceParse,
 }: {
   messageId: string;
   blockIndex: number;
@@ -38,6 +40,7 @@ export function BlockRenderer({
   onChoiceSelect?: ChoiceSelectHandler;
   selectedBySlot?: Record<string, string>;
   formActionDisabled?: boolean;
+  skipMarkdownChoiceParse?: boolean;
 }) {
   switch (block.type) {
     case "markdown":
@@ -50,6 +53,7 @@ export function BlockRenderer({
           onChoiceSelect={onChoiceSelect}
           selectedBySlot={selectedBySlot}
           choiceDisabled={formActionDisabled}
+          skipChoiceParse={skipMarkdownChoiceParse}
         />
       );
     case "choice":
@@ -73,6 +77,10 @@ export function BlockRenderer({
               orderNo={textResult.orderNo}
               title={textResult.title}
               message={textResult.message}
+              fieldGroups={textResult.fieldGroups}
+              sections={textResult.sections}
+              warnings={textResult.warnings}
+              extras={textResult.extras}
             />
           </div>
         );
@@ -107,6 +115,10 @@ export function BlockRenderer({
             orderNo={block.orderNo}
             title={block.title}
             message={block.message}
+            fieldGroups={block.fieldGroups}
+            sections={block.sections}
+            warnings={block.warnings}
+            extras={block.extras}
           />
         </div>
       );
@@ -118,7 +130,8 @@ export function BlockRenderer({
               messageId={messageId}
               blockIndex={blockIndex}
               title={block.title}
-              fields={block.fields}
+              fields={sanitizeFormFields(block.fields)}
+              actions={block.actions}
               onAction={onFormAction}
               disabled={formActionDisabled}
               selectedBySlot={selectedBySlot}
@@ -167,6 +180,7 @@ export function BlockRenderer({
             title={block.title}
             fields={block.fields}
             actions={block.actions}
+            level={block.level}
             onAction={onFormAction}
             disabled={formActionDisabled}
             selectedBySlot={selectedBySlot}

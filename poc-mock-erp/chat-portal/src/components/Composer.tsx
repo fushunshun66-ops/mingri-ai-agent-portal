@@ -4,9 +4,11 @@ import type { Flow, UploadedFile } from "../types/message";
 import { filterFlowsForMention, findFlowByKey, getMentionRange } from "../utils/agentMention";
 import { hasComposerPayload } from "../utils/choiceComposer";
 import { Button } from "@/components/ui/button";
-import { ComposerAgentPicker } from "./ComposerAgentPicker";
+import { Textarea } from "@/components/ui/textarea";
+import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { ComposerQuickPrompts, type QuickPrompt } from "./ComposerQuickPrompts";
-import { IconAttach, IconClose, IconMic, IconSend } from "./icons";
+import { IconAttach, IconChevronRight, IconClose, IconMic, IconSend } from "./icons";
+import { FLOW_META } from "./flowMeta";
 import type { AudioRecorderHandle } from "../types/voice";
 
 export function Composer({
@@ -63,7 +65,6 @@ export function Composer({
   const dragDepthRef = useRef(0);
   const [dragOver, setDragOver] = useState(false);
   const [mentionRange, setMentionRange] = useState<{ start: number; query: string } | null>(null);
-  const [pickerIndex, setPickerIndex] = useState(0);
   const chips = choiceChips ?? [];
   const homeMentionFlow = findFlowByKey(flows ?? [], homeMentionFlowKey);
   const mentionCandidates = useMemo(
@@ -78,7 +79,6 @@ export function Composer({
       return;
     }
     setMentionRange(getMentionRange(text, cursor));
-    setPickerIndex(0);
   };
 
   const applyAgentMention = (flow: Flow) => {
@@ -103,34 +103,22 @@ export function Composer({
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, [value]);
 
+  // Command 组件挂载时 cmdk 会抢夺焦点，需立即还给 textarea
+  useEffect(() => {
+    if (showAgentPicker) {
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [showAgentPicker]);
+
   const isRecording = voiceRecorder?.status === "recording";
   const textareaPlaceholder = isRecording
     ? "正在录音，停止后将显示识别文字…"
     : placeholder;
 
   const onTextareaKey = (e: React.KeyboardEvent) => {
-    if (showAgentPicker) {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setPickerIndex((i) => (i + 1) % mentionCandidates.length);
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setPickerIndex((i) => (i - 1 + mentionCandidates.length) % mentionCandidates.length);
-        return;
-      }
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        applyAgentMention(mentionCandidates[pickerIndex]);
-        return;
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setMentionRange(null);
-        return;
-      }
-    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
@@ -196,12 +184,39 @@ export function Composer({
       >
         {dragOver && <div className="drag-hint">松开以上传文件</div>}
         {showAgentPicker && (
-          <ComposerAgentPicker
-            flows={mentionCandidates}
-            activeIndex={pickerIndex}
-            onPick={applyAgentMention}
-            onHover={setPickerIndex}
-          />
+          <Command
+            className="composer-agent-picker"
+            shouldFilter={false}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === "Escape") {
+                e.stopPropagation();
+                setMentionRange(null);
+              }
+            }}
+          >
+            <CommandList>
+              <CommandGroup heading="指定智能体">
+                {mentionCandidates.map((flow) => {
+                  const meta = FLOW_META[flow.flowKey];
+                  return (
+                    <CommandItem
+                      key={flow.flowKey}
+                      value={flow.flowKey}
+                      className={`composer-agent-picker-item ${meta?.accent || ""}`}
+                      onSelect={() => applyAgentMention(flow)}
+                    >
+                      <span className="composer-agent-picker-dot" />
+                      <span className="composer-agent-picker-body">
+                        <span className="composer-agent-picker-name">{flow.name}</span>
+                        <span className="composer-agent-picker-desc">{flow.description}</span>
+                      </span>
+                      <IconChevronRight />
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
         )}
         {(chips.length > 0 ||
           attachments.length > 0 ||
@@ -276,8 +291,9 @@ export function Composer({
             正在聆听… 识别结果将在停止录音后填入输入框
           </div>
         )}
-        <textarea
+        <Textarea
           ref={textareaRef}
+          className="composer-textarea"
           value={isRecording ? "" : value}
           readOnly={isRecording}
           aria-label="消息输入"
@@ -304,7 +320,7 @@ export function Composer({
                     const spoken = await voiceRecorder.stop();
                     if (spoken && onVoiceText) onVoiceText(spoken);
                     requestAnimationFrame(() => {
-                      const el = document.querySelector(".composer textarea") as HTMLTextAreaElement | null;
+                      const el = document.querySelector(".composer .composer-textarea") as HTMLTextAreaElement | null;
                       el?.focus();
                       const len = el?.value.length ?? 0;
                       el?.setSelectionRange(len, len);
@@ -351,15 +367,15 @@ export function Composer({
               </>
             )}
           </div>
-          <Button
+          <button
             className="send-btn"
-            size="icon"
             disabled={sending || uploading || !canSend}
             onClick={() => onSend()}
             aria-label="发送"
+            style={{ background: "var(--primary)", color: "#fff" }}
           >
             <IconSend />
-          </Button>
+          </button>
         </div>
       </div>
       <div className="composer-hint">

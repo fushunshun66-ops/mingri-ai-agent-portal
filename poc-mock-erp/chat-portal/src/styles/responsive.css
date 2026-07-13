@@ -79,48 +79,7 @@
     padding: 0 12px;
   }
 
-  /* ---- Sidebar overlay ---- */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    width: 272px;
-    height: 100vh;
-    height: 100dvh;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    overscroll-behavior: contain;
-    overflow-y: auto;
-    box-shadow: var(--sidebar-shadow);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  /* ---- Backdrop ---- */
-  .sidebar-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 99;
-    background: rgba(0, 0, 0, 0.35);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .sidebar-backdrop.visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* ---- body 滚动锁定 ---- */
-  body.sidebar-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-  }
+  /* ---- Sidebar overlay (由 Sheet 组件接管) ---- */
 
   /* ---- 触摸优化 ---- */
   * {
@@ -211,7 +170,7 @@
     padding: 8px 10px 6px;
     border-radius: var(--radius);
   }
-  .composer textarea {
+  .composer .composer-textarea {
     font-size: 16px;
   }
   .composer-quick-prompts {
@@ -240,5 +199,52 @@
   .composer-wrap-home {
     max-width: none;
     padding: 0 8px 12px;
+  }
+}
+
+/* =========================================
+   横屏适配（iPad / 折叠屏展开）
+   ========================================= */
+@media (orientation: landscape) and (max-height: 900px) {
+  /* TopBar 压缩 */
+  .topbar {
+    height: 44px;
+    padding: 0 20px;
+  }
+
+  /* Composer 压缩 — 横屏时不占过多高度 */
+  .composer-wrap {
+    padding: 4px 24px 8px;
+  }
+  .composer {
+    padding: 6px 10px 4px;
+  }
+  .composer .composer-textarea {
+    max-height: 100px;
+  }
+  .composer-toolbar {
+    margin-top: 4px;
+  }
+  .composer-hint {
+    display: none;
+  }
+  .composer-quick-prompts {
+    display: none;
+  }
+
+  /* 消息列表间距压缩 */
+  .message-list-inner {
+    gap: 12px;
+    padding: 12px 24px 4px;
+  }
+}
+
+/* 超大横屏（iPad Pro 12.9"）内容区收窄 */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .composer {
+    max-width: 800px;
+  }
+  .message-list-inner {
+    max-width: 800px;
   }
 }

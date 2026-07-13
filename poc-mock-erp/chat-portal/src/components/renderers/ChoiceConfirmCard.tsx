@@ -113,15 +113,15 @@ export function ChoiceConfirmStack({
   const introText = intro?.replace(/[：:]\s*$/u, "").trim();
   return (
     <div className="choice-confirm-stack">
-      {introText && <p className="choice-stack-intro">{introText}</p>}
       {blocks.map((block, i) => {
         const slotKey = buildChoiceSlotKey(messageId, blockIndex, `${block.label}#${i}`);
+        const hint = i === 0 && introText ? introText : block.hint;
         return (
           <ChoiceConfirmCard
             key={slotKey}
             slotKey={slotKey}
             label={block.label}
-            hint={block.hint}
+            hint={hint}
             options={block.options}
             variant={block.variant}
             items={block.items}

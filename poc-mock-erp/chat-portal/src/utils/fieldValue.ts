@@ -1,5 +1,5 @@
 const LIST_FIELD_LABELS = new Set(["商品列表", "产品列表", "订单明细", "items", "审核内容"]);
-const MONEY_COLUMNS = new Set(["单价", "总金额", "金额", "小计金额", "价税合计", "合同值", "ERP值"]);
+const MONEY_COLUMNS = new Set(["单价", "总金额", "金额", "小计金额", "价税合计", "合同值", "ERP值", "含税单价", "含税金额"]);
 
 export const CONTRACT_BASIC_KEYS = new Set(["合同名称", "客户名称", "合同编号", "合同号"]);
 export const CONTRACT_SUMMARY_KEYS = new Set([

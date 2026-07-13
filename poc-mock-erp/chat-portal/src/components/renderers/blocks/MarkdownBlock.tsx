@@ -4,6 +4,7 @@ import type { ChoiceSelectHandler } from "../ChoiceConfirmCard";
 import { ChoiceConfirmStack } from "../ChoiceConfirmCard";
 import { ShipmentDoc } from "../ShipmentDoc";
 import { OrderResultCard } from "../OrderResultCard";
+import { LazyImage } from "../../LazyImage";
 import { parseChoiceBlocksFromText } from "../../../utils/choiceParser";
 import { tryParseShipmentDocFromMarkdown } from "../../../utils/structuredDocMarkdown";
 import { tryOrderResultBlock } from "../../../utils/orderResultParser";
@@ -16,6 +17,7 @@ export function MarkdownBlock({
   onChoiceSelect,
   selectedBySlot,
   choiceDisabled,
+  skipChoiceParse,
 }: {
   messageId: string;
   blockIndex: number;
@@ -24,9 +26,11 @@ export function MarkdownBlock({
   onChoiceSelect?: ChoiceSelectHandler;
   selectedBySlot?: Record<string, string>;
   choiceDisabled?: boolean;
+  /** 消息中已有独立 choice block 时跳过 markdown 二次解析，避免重复卡片 */
+  skipChoiceParse?: boolean;
 }) {
-  const parsed = parseChoiceBlocksFromText(content, flowKey);
-  if (parsed?.blocks.length) {
+  const parsed = skipChoiceParse ? null : parseChoiceBlocksFromText(content, flowKey);
+  if (parsed?.blocks.some((b) => b.options.length > 0)) {
     return (
       <div className="block-primary">
         <ChoiceConfirmStack
@@ -68,13 +72,25 @@ export function MarkdownBlock({
           orderNo={orderResult.orderNo}
           title={orderResult.title}
           message={orderResult.message}
+          fieldGroups={orderResult.fieldGroups}
+          sections={orderResult.sections}
+          warnings={orderResult.warnings}
+          extras={orderResult.extras}
         />
       </div>
     );
   }
   return (
     <div className="block-markdown">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          img: ({ src, alt }) =>
+            src ? <LazyImage src={src} alt={alt || ""} className="block-file-image" /> : null,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }

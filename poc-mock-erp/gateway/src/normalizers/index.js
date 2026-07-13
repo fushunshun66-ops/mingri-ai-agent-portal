@@ -34,10 +34,6 @@ function tryParseJson(text) {
   return parseLooseJson(text);
 }
 
-/**
- * 中台「记忆/知识库」节点常输出 { bucketSn, memoryContent, createTime } 包装体，
- * memoryContent 内才是真正的业务 JSON（如销售订单字段）。展开后再走 form/card/table 逻辑。
- */
 function unwrapMemoryContent(value) {
   if (typeof value === "string") {
     const parsed = tryParseJson(value);
@@ -74,6 +70,28 @@ function isScalarFormValue(val) {
   return val === null || ["string", "number", "boolean"].includes(typeof val);
 }
 
+
+function isInternalFieldKey(key) {
+  if (!key) return false;
+  const k = String(key).toLowerCase();
+  if (k === "id") return true;
+  if (k.endsWith("_id")) return true;
+  if (k.startsWith("pk_")) return true;
+  return false;
+}
+
+function isFalseishSuccess(success) {
+  if (success === false || success === 0) return true;
+  const s = String(success).trim().toLowerCase();
+  return s === "false" || s === "0";
+}
+
+function isApiErrorScalars(scalars) {
+  if (!("success" in scalars)) return false;
+  if (!isFalseishSuccess(scalars.success)) return false;
+  return "message" in scalars || "error" in scalars || "code" in scalars;
+}
+
 function isFormLikeObject(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const entries = Object.entries(value);
@@ -83,7 +101,11 @@ function isFormLikeObject(value) {
 }
 
 function buildFormBlockFromScalars(scalars, itemName, schemaKey, minFields = 2) {
-  const keys = Object.keys(scalars);
+  const filteredScalars = {};
+  for (const [k, v] of Object.entries(scalars)) {
+    if (!isInternalFieldKey(k)) filteredScalars[k] = v;
+  }
+  const keys = Object.keys(filteredScalars);
   if (keys.length < minFields) return null;
 
   const schema = formSchemas[schemaKey] || formSchemas.generic || {};
@@ -92,26 +114,33 @@ function buildFormBlockFromScalars(scalars, itemName, schemaKey, minFields = 2) 
   const fieldOrder = schema.fieldOrder || [];
 
   const orderedKeys = [
-    ...fieldOrder.filter((k) => k in scalars),
+    ...fieldOrder.filter((k) => k in filteredScalars),
     ...keys.filter((k) => !fieldOrder.includes(k)),
   ];
 
   const fields = orderedKeys.map((key) => ({
     key,
     label: labels[key] || key,
-    value: scalars[key] == null ? "" : String(scalars[key]),
+    value: filteredScalars[key] == null ? "" : String(filteredScalars[key]),
     widget: widgets[key] || undefined,
   }));
 
   const actions = (schema.actions || formSchemas.generic?.actions || []).map((a) => ({ ...a }));
 
-  return {
+  const form = {
     type: "form",
     schemaKey,
     title: schema.title || itemName || "结构化表单",
     fields,
     actions,
   };
+
+  if (isApiErrorScalars(filteredScalars)) {
+    form.level = "error";
+    form.title = "请求失败";
+  }
+
+  return form;
 }
 
 function buildFormBlock(obj, itemName) {
@@ -171,6 +200,118 @@ function fileBlock(item) {
   };
 }
 
+function tryInfoMissingBlock(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (typeof value.Content !== "string") return null;
+  if (/\[信息缺失\]|缺少关键要素/.test(value.Content)) {
+    return { type: "markdown", content: value.Content };
+  }
+  return null;
+}
+
+const ENTITY_NAME_RE = /[\u4e00-\u9fa5A-Za-z0-9（）()·]{2,}(?:有限公司|股份有限公司|集团公司)/g;
+const NARRATIVE_CHOICE_RE = /相似|请检查|请选择|请确认|目前库中有/;
+
+function sanitizeCompanyName(raw) {
+  return String(raw || "")
+    .trim()
+    .replace(/^.*(?:目前库中有|库中有|为：|为:)/, "")
+    .trim();
+}
+
+function extractEntityNames(text) {
+  const seen = new Set();
+  const out = [];
+  for (const m of String(text || "").matchAll(ENTITY_NAME_RE)) {
+    const name = sanitizeCompanyName(m[0]);
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
+}
+
+function buildNarrativeChoiceBlocks(content) {
+  const text = String(content || "").trim();
+  if (!text || !NARRATIVE_CHOICE_RE.test(text)) return null;
+  const entities = extractEntityNames(text);
+  if (!entities.length) return null;
+  return [
+    {
+      type: "choice",
+      label: "客户",
+      hint: text,
+      options: entities.map((v, i) => ({
+        id: `choice-narrative-${i}`,
+        label: v,
+        message: v,
+      })),
+    },
+  ];
+}
+
+function tryChoiceBlocksFromNarrativeObject(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const contentVal = value.Content ?? value.content;
+  if (typeof contentVal !== "string") return null;
+  const dataVal = value.Data ?? value.data;
+  if (dataVal && typeof dataVal === "object" && !Array.isArray(dataVal)) {
+    const hasDataArrays = Object.values(dataVal).some((v) => Array.isArray(v) && v.length > 0);
+    if (hasDataArrays) return null;
+  }
+  return buildNarrativeChoiceBlocks(contentVal);
+}
+
+function tryChoiceBlocksFromNarrativeText(text) {
+  if (typeof text !== "string") return null;
+  return buildNarrativeChoiceBlocks(text);
+}
+
+
+const CANDIDATE_KEY_LABELS = { customers: "客户", materials: "物料", products: "商品" };
+
+function tryChoiceBlocksFromObject(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const contentVal = value.Content ?? value.content;
+  const dataVal = value.Data ?? value.data;
+
+  if (typeof contentVal !== "string") {
+    return null;
+  }
+  if (!dataVal || typeof dataVal !== "object" || Array.isArray(dataVal)) {
+    return null;
+  }
+
+  const dataEntries = Object.entries(dataVal);
+  if (!dataEntries.some(([, v]) => Array.isArray(v) && v.length > 0 && v.every(x => typeof x === "string"))) {
+    return null;
+  }
+
+  const blocks = [];
+  const trimmed = contentVal.trim();
+  let firstChoice = true;
+
+  for (const [key, val] of dataEntries) {
+    if (!Array.isArray(val) || !val.length) continue;
+    if (!val.every(v => typeof v === "string")) continue;
+    const label = CANDIDATE_KEY_LABELS[key] || key;
+    blocks.push({
+      type: "choice",
+      label,
+      hint: firstChoice && trimmed ? trimmed : `请选择${label}`,
+      options: val.map((v, i) => ({
+        id: `choice-${key}-${i}`,
+        label: v,
+        message: v,
+      })),
+    });
+    firstChoice = false;
+  }
+
+  const result = blocks.length > 0 ? blocks : null;
+  return result;
+}
+
 function processStructuredValue(value, itemName, blocks) {
   value = unwrapDocArray(value);
 
@@ -200,6 +341,33 @@ function processStructuredValue(value, itemName, blocks) {
       return true;
     }
 
+    // 场景①：信息缺失提示（先于场景④，避免含 [信息缺失] 的 Content+Data 被误判）
+    const infoMissing = tryInfoMissingBlock(value);
+    if (infoMissing) {
+      blocks.push(infoMissing);
+      return true;
+    }
+
+    // 场景④：多候选数据 → choice 块组
+    const choiceBlocks = tryChoiceBlocksFromObject(value);
+    if (choiceBlocks) {
+      blocks.push(...choiceBlocks);
+      return true;
+    }
+
+    const narrativeChoice = tryChoiceBlocksFromNarrativeObject(value);
+    if (narrativeChoice) {
+      blocks.push(...narrativeChoice);
+      return true;
+    }
+
+    // 单字段字符串对象（如 { content: "消息文本" }）→ 直接渲染为 markdown，避免泄露 wrapper 键名
+    const objKeys = Object.keys(value);
+    if (objKeys.length === 1 && typeof value[objKeys[0]] === "string") {
+      blocks.push({ type: "markdown", content: value[objKeys[0]] });
+      return true;
+    }
+
     const partitioned = tryPartitionToBlocks(value, itemName);
     if (partitioned.length > 0) {
       blocks.push(...partitioned);
@@ -212,17 +380,12 @@ function processStructuredValue(value, itemName, blocks) {
   return false;
 }
 
-/**
- * 将一个输出项（{ id, type, name, currentValue }）转换为消息块数组。
- * 同时收集 <think> 推理段（挂在返回数组的 _reasoning 上）。
- */
 function outputItemToBlocks(item, flowKey) {
   let value = item.currentValue ?? item.value ?? item.defaultValue;
   value = unwrapMemoryContent(value);
   const blocks = [];
   blocks._reasoning = [];
 
-  // 文件/知识类
   if (Array.isArray(value) && value.every(isFileLike) && value.length) {
     value.forEach((f) => blocks.push(fileBlock(f)));
     return blocks;
@@ -236,7 +399,6 @@ function outputItemToBlocks(item, flowKey) {
     return blocks;
   }
 
-  // 字符串：先剥离 <think>，再尝试识别 JSON 字符串以优化展示
   if (typeof value === "string") {
     const { visible, reasoning } = splitThink(value);
     blocks._reasoning = reasoning;
@@ -252,6 +414,12 @@ function outputItemToBlocks(item, flowKey) {
     const resultBlock = tryOrderResultBlock(visible, item.name);
     if (resultBlock) {
       blocks.push(resultBlock);
+      return blocks;
+    }
+
+    const narrativeText = tryChoiceBlocksFromNarrativeText(visible);
+    if (narrativeText) {
+      blocks.push(...narrativeText);
       return blocks;
     }
 
@@ -280,20 +448,11 @@ function outputItemToBlocks(item, flowKey) {
   return blocks;
 }
 
-/**
- * 单个输出项归一化（供流式逐事件复用）。
- * 返回 { blocks, reasoning }。
- */
 export function normalizeOutputItem(item, flowKey) {
   const produced = outputItemToBlocks(item, flowKey);
   return { blocks: [...produced], reasoning: produced._reasoning || [] };
 }
 
-/**
- * 取出输出项数组，兼容两种结构：
- * - 实际：data.content.output = [{id,type,name,currentValue,...}]
- * - 文档：data.output = { var_xxx: value }
- */
 function extractOutputItems(data) {
   const content = data?.content;
   if (content && Array.isArray(content.output)) return content.output;
@@ -304,9 +463,6 @@ function extractOutputItems(data) {
   return [];
 }
 
-/**
- * 中台对话流响应 → { blocks, traces, runId, runStatus }
- */
 export function normalizeChatFlowResponse(body, flowKey) {
   const data = body?.data || {};
   const runId = data.runId != null ? String(data.runId) : null;

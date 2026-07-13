@@ -1,12 +1,29 @@
 {
   "sales_order": {
     "title": "销售订单草稿",
-    "matchKeys": ["客户名称", "商品名称", "商品列表", "数量"],
+    "matchKeys": [
+      "客户名称",
+      "商品名称",
+      "商品列表",
+      "数量",
+      "customer_name",
+      "product_details",
+      "quantity",
+      "unit_price"
+    ],
     "deepMatch": true,
-    "fieldOrder": ["客户名称", "商品名称", "数量", "单价", "总金额", "交付日期"],
+    "fieldOrder": [
+      "客户名称",
+      "商品名称",
+      "数量",
+      "单价",
+      "总金额",
+      "交付日期"
+    ],
     "labels": {
       "客户名称": "客户",
-      "交付日期": "交期"
+      "交付日期": "交期",
+      "customer_name": "客户"
     },
     "widgets": {
       "交付日期": "date",
@@ -14,32 +31,75 @@
       "单价": "currency",
       "总金额": "currency"
     },
-    "unwrapPaths": ["订单信息", "金额信息", "基本信息"],
+    "unwrapPaths": [
+      "订单信息",
+      "金额信息",
+      "基本信息"
+    ],
     "listSections": [
       {
-        "keys": ["商品列表", "产品列表", "订单明细", "items"],
+        "keys": [
+          "商品列表",
+          "产品列表",
+          "订单明细",
+          "items",
+          "product_details"
+        ],
         "title": "商品明细",
-        "columnOrder": ["商品名称", "数量", "单价", "小计金额"],
+        "columnOrder": [
+          "商品名称",
+          "数量",
+          "单位",
+          "单价",
+          "小计金额"
+        ],
         "fieldMap": {
           "商品": "商品名称",
-          "productName": "商品名称"
+          "productName": "商品名称",
+          "name": "商品名称",
+          "quantity": "数量",
+          "unit_price": "单价",
+          "pk_measdoc_name": "单位"
         }
       },
       {
-        "keys": ["费用明细", "附加费用"],
+        "keys": [
+          "费用明细",
+          "附加费用"
+        ],
         "title": "费用明细",
-        "columnOrder": ["费用项", "金额"]
+        "columnOrder": [
+          "费用项",
+          "金额"
+        ]
       },
       {
-        "keys": ["风险提示"],
+        "keys": [
+          "风险提示"
+        ],
         "title": "风险提示",
-        "columnOrder": ["等级", "说明"]
+        "columnOrder": [
+          "等级",
+          "说明"
+        ]
       }
     ],
     "actions": [
-      { "id": "confirm", "label": "确认无误", "message": "确认无误，请提交订单" },
-      { "id": "edit_qty", "label": "修改数量", "message": "我想修改数量" },
-      { "id": "edit_date", "label": "修改交期", "message": "我想修改交期" }
+      {
+        "id": "confirm",
+        "label": "确认无误",
+        "message": "确认无误，请提交订单"
+      },
+      {
+        "id": "edit_qty",
+        "label": "修改数量",
+        "message": "我想修改数量"
+      },
+      {
+        "id": "edit_date",
+        "label": "修改交期",
+        "message": "我想修改交期"
+      }
     ]
   },
   "shipment": {
@@ -79,16 +139,37 @@
       "要求到货时间": "date",
       "总金额": "currency"
     },
-    "unwrapPaths": ["order_info", "基本信息", "订单信息"],
+    "unwrapPaths": [
+      "order_info",
+      "基本信息",
+      "订单信息"
+    ],
     "listSections": [
       {
-        "keys": ["items", "发货明细", "明细", "var_shipment"],
+        "keys": [
+          "items",
+          "发货明细",
+          "明细",
+          "var_shipment"
+        ],
         "title": "发货明细",
-        "columnOrder": ["物料", "仓库属地", "发货数量", "单价", "要求到货时间", "收货地址", "备注"]
+        "columnOrder": [
+          "物料",
+          "仓库属地",
+          "发货数量",
+          "单价",
+          "要求到货时间",
+          "收货地址",
+          "备注"
+        ]
       }
     ],
     "actions": [
-      { "id": "confirm", "label": "确认提交", "message": "确认无误，请提交发货申请" }
+      {
+        "id": "confirm",
+        "label": "确认提交",
+        "message": "确认无误，请提交发货申请"
+      }
     ]
   },
   "contract_review": {
@@ -106,16 +187,31 @@
       "审核总结"
     ],
     "deepMatch": true,
-    "fieldOrder": ["合同名称", "客户名称", "合同编号", "总审核项数", "通过项数", "不通过项数"],
+    "fieldOrder": [
+      "合同名称",
+      "客户名称",
+      "合同编号",
+      "总审核项数",
+      "通过项数",
+      "不通过项数"
+    ],
     "labels": {
       "合同名称": "合同名称",
       "客户名称": "客户名称",
       "合同编号": "合同编号"
     },
-    "unwrapPaths": ["基本信息", "审核总结"],
+    "unwrapPaths": [
+      "基本信息",
+      "审核总结"
+    ],
     "listSections": [
       {
-        "keys": ["审核内容", "评审项", "审核项", "var_risk"],
+        "keys": [
+          "审核内容",
+          "评审项",
+          "审核项",
+          "var_risk"
+        ],
         "title": "审核内容",
         "columnOrder": [
           "审核规则名称",
@@ -133,8 +229,16 @@
       }
     ],
     "actions": [
-      { "id": "confirm", "label": "确认无误", "message": "合同评审结果已确认" },
-      { "id": "detail", "label": "查看详情", "message": "请展开说明不通过项" }
+      {
+        "id": "confirm",
+        "label": "确认无误",
+        "message": "合同评审结果已确认"
+      },
+      {
+        "id": "detail",
+        "label": "查看详情",
+        "message": "请展开说明不通过项"
+      }
     ]
   },
   "generic": {
@@ -146,6 +250,12 @@
     "widgets": {},
     "unwrapPaths": [],
     "listSections": [],
-    "actions": [{ "id": "confirm", "label": "确认", "message": "确认无误" }]
+    "actions": [
+      {
+        "id": "confirm",
+        "label": "确认",
+        "message": "确认无误"
+      }
+    ]
   }
 }

@@ -194,12 +194,19 @@
   background: rgba(2, 92, 172, 0.06); color: var(--primary); font-weight: 600;
   border-radius: var(--radius); pointer-events: none;
 }
-.composer textarea {
+.composer .composer-textarea {
   width: 100%; border: 0; outline: 0; resize: none; background: transparent;
   font-family: inherit; font-size: 15px; line-height: 1.6; color: var(--text);
   padding: 4px 4px 0; max-height: 200px;
+  min-height: auto;
+  border-radius: 0;
+  box-shadow: none;
 }
-.composer textarea::placeholder { color: #aab0bf; }
+.composer .composer-textarea::placeholder { color: #aab0bf; }
+.composer .composer-textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 .composer-toolbar { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
 .composer-tools-left { display: flex; align-items: center; gap: 8px; }
 .tool-btn {
@@ -309,7 +316,7 @@
   50% { box-shadow: 0 0 0 6px rgba(255, 77, 79, 0); }
 }
 /* 录音中 textarea */
-.composer-recording textarea {
+.composer-recording .composer-textarea {
   background: #f8fbff;
   box-shadow: inset 0 0 0 1px rgba(2, 92, 172, 0.12);
 }

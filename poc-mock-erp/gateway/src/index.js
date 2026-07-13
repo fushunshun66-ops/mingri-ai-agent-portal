@@ -6,7 +6,6 @@ import { AgentPlatformAdapter } from "./adapters/agentPlatform.js";
 import { normalizeChatFlowResponse, normalizeOutputItem, errorBlocks, setFormSchemas } from "./normalizers/index.js";
 import { summarizeSessionTitle } from "./utils/sessionTitle.js";
 import { detectIntent, CONFIDENCE_THRESHOLD } from "./utils/intentRouter.js";
-import { SESSION_RESET_ASSISTANT_TEXT } from "./utils/sessionReset.js";
 import { WebSocketServer } from "ws";
 import { createAsrProxy } from "./asr-proxy.js";
 
@@ -89,30 +88,7 @@ app.get("/api/sessions/:id/messages", (req, res) => {
 
 // 重置中台会话记忆（轮换 external_session_sn），用于「好的/完成」后连续办理下一单
 app.post("/api/sessions/:id/reset", async (req, res) => {
-  const session = repo.getSession(req.params.id);
-  if (!session) return fail(res, "会话不存在", 404);
-  const { ackContent } = req.body || {};
-  try {
-    const externalSessionSn = await adapter.createSession(session.flow_key);
-    const updated = repo.touchSession(session.id, { external_session_sn: externalSessionSn });
-
-    if (typeof ackContent === "string" && ackContent.trim()) {
-      repo.addMessage({
-        sessionId: session.id,
-        role: "user",
-        blocks: [{ type: "text", content: ackContent.trim() }],
-      });
-    }
-    repo.addMessage({
-      sessionId: session.id,
-      role: "assistant",
-      blocks: [{ type: "markdown", content: SESSION_RESET_ASSISTANT_TEXT }],
-    });
-
-    ok(res, { session: updated, messages: repo.listMessages(session.id) }, "会话记忆已重置");
-  } catch (err) {
-    fail(res, `重置会话失败：${err.message}`, 502);
-  }
+  fail(res, "清空上下文功能已禁用", 403);
 });
 
 // Trace 列表
@@ -309,7 +285,6 @@ app.post("/api/sessions/:id/chat/stream", async (req, res) => {
           st.accum = value.startsWith(prev) ? value : prev + value;
           value = st.accum;
         }
-
         const { blocks, reasoning } = normalizeOutputItem(
           { id: key, name: st.name, type: st.type, currentValue: value },
           session.flow_key,

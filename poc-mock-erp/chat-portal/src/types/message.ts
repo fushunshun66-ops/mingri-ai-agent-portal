@@ -1,3 +1,10 @@
+import type {
+  OrderResultField,
+  OrderResultFieldGroup,
+  OrderResultSection,
+  OrderResultWarning,
+} from "../utils/orderResultEnricher";
+
 export type FormField = { key: string; label: string; value: string; widget?: string };
 export type FormAction = { id: string; label: string; message: string };
 
@@ -10,6 +17,7 @@ export type MessageBlock =
       type: "form";
       schemaKey: string;
       title?: string;
+      level?: "info" | "error";
       fields: FormField[];
       actions?: FormAction[];
     }
@@ -30,6 +38,10 @@ export type MessageBlock =
       status?: string;
       title?: string;
       message?: string;
+      fieldGroups?: OrderResultFieldGroup[];
+      sections?: OrderResultSection[];
+      warnings?: OrderResultWarning[];
+      extras?: OrderResultField[];
     };
 
 export interface ChatMessage {

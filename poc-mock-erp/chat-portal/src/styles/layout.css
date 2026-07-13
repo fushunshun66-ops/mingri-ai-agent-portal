@@ -11,10 +11,7 @@
   z-index: 2;
 }
 
-/* Sidebar 遮罩 — 桌面端隐藏，移动端在 @media 中显示 */
-.sidebar-backdrop {
-  display: none; /* 桌面端不显示 */
-}
+/* Sidebar 遮罩 — 已被 Sheet 组件替代 */
 .brand {
   display: flex; align-items: center; gap: 12px; padding: 16px 16px 12px;
   cursor: pointer; width: 100%; text-align: left;
@@ -77,11 +74,7 @@
 .sidebar-section-hint {
   font-size: 10px; color: var(--muted); white-space: nowrap;
 }
-.sidebar-running-count {
-  font-size: 10px; font-weight: 600; color: var(--primary);
-  background: var(--primary-soft); padding: 2px 8px; border-radius: 10px;
-  white-space: nowrap;
-}
+/* sidebar-running-count 已替换为 Badge */
 
 /* —— 下区：办理记录（历史） —— */
 .sidebar-history {
@@ -162,22 +155,7 @@
 .session-item-foot {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding-left: 16px;
 }
-.session-status-badge {
-  font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 4px; line-height: 1.5;
-}
-.session-status-badge--running {
-  color: var(--primary); background: var(--primary-soft);
-  animation: sessionBadgePulse 1.4s ease-in-out infinite;
-}
-.session-status-badge--active {
-  color: var(--primary-2); background: var(--primary-soft);
-}
-.session-item-tag {
-  flex: none; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
-}
-.session-item-tag.cap-accent-blue { background: var(--accent-blue-soft); color: var(--accent-blue); }
-.session-item-tag.cap-accent-orange { background: var(--accent-orange-soft); color: var(--accent-orange); }
-.session-item-tag.cap-accent-purple { background: var(--accent-purple-soft); color: var(--accent-purple); }
+/* session-status-badge / session-item-tag 已替换为 Badge */
 .session-item-time { font-size: 11px; color: var(--muted); margin-left: auto; white-space: nowrap; }
 .session-empty {
   color: var(--muted); font-size: 12px; padding: 12px;
@@ -193,6 +171,9 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.75; }
 }
+.session-status-badge--running {
+  animation: sessionBadgePulse 1.4s ease-in-out infinite;
+}
 
 /* ===== Main ===== */
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -207,39 +188,15 @@
 .topbar-crumb-sep { color: var(--line-strong); }
 .topbar-session { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 .topbar-right { display: flex; align-items: center; gap: 8px; flex: none; }
-.topbar-tag {
-  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
-}
-.topbar-tag.cap-accent-blue { background: var(--accent-blue-soft); color: var(--accent-blue); }
-.topbar-tag.cap-accent-orange { background: var(--accent-orange-soft); color: var(--accent-orange); }
-.topbar-tag.cap-accent-purple { background: var(--accent-purple-soft); color: var(--accent-purple); }
-.topbar-mode {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 4px;
-}
+/* topbar-tag 已替换为 Badge */
 .topbar-mode-dot {
   width: 6px; height: 6px; border-radius: 50%; flex: none;
 }
-.topbar-mode--live {
-  color: #1a7f37; background: #eef8f0; border: 1px solid rgba(26, 127, 55, 0.22);
-}
-.topbar-mode--live .topbar-mode-dot {
-  background: var(--success);
-  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.22);
-}
-.topbar-mode--offline {
-  color: var(--danger); background: #fff0f0; border: 1px solid rgba(255, 77, 79, 0.25);
-}
-.topbar-mode--offline .topbar-mode-dot { background: var(--danger); }
 
 /* 汉堡菜单按钮 — 桌面端隐藏，移动端在 @media 中显示 */
 .topbar-menu-btn {
   display: none; /* 桌面端不显示 */
 }
-.topbar-mode--other {
-  color: var(--muted); background: #fafafa; border: 1px solid var(--line);
-}
-.topbar-mode--other .topbar-mode-dot { background: var(--muted); }
 .topbar-title { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
 .topbar-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .topbar-dot.cap-accent-blue { background: var(--accent-blue); }
@@ -255,3 +212,45 @@
 }
 .workbench { flex: 1; min-height: 0; }
 
+/* ===== Swipe Session Item ===== */
+.swipe-item-container {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 6px;
+  border-radius: var(--radius);
+}
+.swipe-actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+.swipe-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  border: 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  transition: opacity 0.2s ease;
+}
+.swipe-action--archive {
+  background: #faad14;
+}
+.swipe-action--delete {
+  background: #ff4d4f;
+  border-top-right-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+.swipe-item-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Keyboard transition (keyboard viewport) ===== */
+.chat-area {
+  transition: padding-bottom 0.15s ease-out;
+}

@@ -1,4 +1,5 @@
 import { FLOW_META } from "../flowMeta";
+import { Badge } from "@/components/ui/badge";
 import { DocFieldGrid } from "./DocFieldGrid";
 import { DocSectionTable } from "./DocSectionTable";
 import type { ChoiceSelectHandler } from "./ChoiceConfirmCard";
@@ -41,7 +42,7 @@ export function ShipmentDoc({
           <h3 className="doc-card-title">{displayTitle}</h3>
           {docNo && <span className="doc-card-no">{docNo}</span>}
         </div>
-        <span className="doc-card-badge">待确认</span>
+        <Badge variant="outline" className="text-[11px] font-semibold px-[10px] py-[4px] rounded bg-[#fff7e6] text-[#d48806] border-[#ffd591]">待确认</Badge>
       </div>
       <div className="doc-card-body">
         {visibleFields.length > 0 && <DocFieldGrid fields={visibleFields} />}

@@ -1,6 +1,7 @@
 import type { MessageBlock } from "../../../types/message";
 import type { ChoiceSelectHandler } from "../ChoiceConfirmCard";
 import { SalesOrderDoc } from "../SalesOrderDoc";
+import { sanitizeFormFields, sanitizeTableColumns } from "../../../utils/formDisplay";
 
 export function renderSalesOrderDocGroup(
   blocks: MessageBlock[],
@@ -15,7 +16,11 @@ export function renderSalesOrderDocGroup(
   const sections = blocks
     .slice(1)
     .filter((b): b is MessageBlock & { type: "table" } => b.type === "table")
-    .map((b) => ({ title: b.title, columns: b.columns, rows: b.rows }));
+    .map((b) => ({
+      title: b.title,
+      columns: sanitizeTableColumns(b.columns, b.rows),
+      rows: b.rows,
+    }));
 
   return (
     <div className="block-primary">
@@ -23,8 +28,9 @@ export function renderSalesOrderDocGroup(
         messageId={messageId}
         blockIndex={blockIndex}
         title={formBlock.title}
-        fields={formBlock.fields}
+        fields={sanitizeFormFields(formBlock.fields)}
         sections={sections}
+        actions={formBlock.actions}
         onAction={onFormAction}
         disabled={formActionDisabled}
         selectedBySlot={selectedBySlot}

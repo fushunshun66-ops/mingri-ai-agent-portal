@@ -1,4 +1,5 @@
 import { FLOW_META } from "../flowMeta";
+import { Badge } from "@/components/ui/badge";
 import { DocFieldGrid } from "./DocFieldGrid";
 import { DocSectionTable } from "./DocSectionTable";
 import type { ChoiceSelectHandler } from "./ChoiceConfirmCard";
@@ -75,9 +76,15 @@ export function ContractReviewDoc({
           <span className="doc-card-module">{meta.module}</span>
           <h3 className="doc-card-title">{displayTitle}</h3>
         </div>
-        <span className={`doc-card-badge${failCount > 0 ? " doc-card-badge-warn" : " doc-card-badge-info"}`}>
+        <Badge
+          variant={failCount > 0 ? "destructive" : "secondary"}
+          className={failCount > 0
+            ? "text-[11px] font-semibold px-[10px] py-[4px] rounded bg-[#fff0f0] text-[#ff4d4f] border-[#ffccc7]"
+            : "text-[11px] font-semibold px-[10px] py-[4px] rounded"
+          }
+        >
           {badgeLabel}
-        </span>
+        </Badge>
       </div>
       <div className="doc-card-body">
         {normalizedSummary && <ReviewSummarySection summary={normalizedSummary} />}

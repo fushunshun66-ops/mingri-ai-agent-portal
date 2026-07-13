@@ -3,7 +3,10 @@
 const RESET_ACK_RE =
   /^(好的|好哒|好啊|好呀|好|完成|完成了|完结|结束|知道了|明白|收到|可以|嗯嗯|嗯|行|ok|okay|thanks|thankyou|谢谢|多谢|没问题|继续)[。.!！？?~,\s]*$/i;
 
+export const SESSION_RESET_ENABLED = false;
+
 export function isSessionResetAck(text: string): boolean {
+  if (!SESSION_RESET_ENABLED) return false;
   const normalized = String(text || "")
     .trim()
     .replace(/\s+/g, "");

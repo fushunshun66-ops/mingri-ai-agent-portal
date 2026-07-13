@@ -254,6 +254,51 @@ function parseSalesOrderMissingFieldsReminder(text: string): ParsedChoiceBlocks 
   };
 }
 
+const ENTITY_NAME_RE = /[\u4e00-\u9fa5A-Za-z0-9（）()·]{2,}(?:有限公司|股份有限公司|集团公司)/g;
+const NARRATIVE_CHOICE_RE = /相似|请检查|请选择|请确认|目前库中有/;
+
+function sanitizeCompanyName(raw: string) {
+  return raw
+    .trim()
+    .replace(/^.*(?:目前库中有|库中有|为：|为:)/, "")
+    .trim();
+}
+
+function extractEntityNames(text: string) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const m of String(text || "").matchAll(ENTITY_NAME_RE)) {
+    const name = sanitizeCompanyName(m[0]);
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
+}
+
+function parseNarrativeEntityChoices(text: string): ParsedChoiceBlocks | null {
+  const normalized = normalizePlatformQuotes(String(text || "").trim());
+  if (!normalized || !NARRATIVE_CHOICE_RE.test(normalized)) return null;
+  const entities = extractEntityNames(normalized);
+  if (!entities.length) return null;
+  return {
+    intro: normalized,
+    blocks: [
+      {
+        type: "choice",
+        label: "客户",
+        hint: "请选择客户",
+        options: buildOptions("客户", entities, 0),
+      },
+    ],
+  };
+}
+
+function withNarrativeEntityFallback(text: string, parsed: ParsedChoiceBlocks | null) {
+  if (parsed?.blocks?.some((b) => b.options.length > 0)) return parsed;
+  return parseNarrativeEntityChoices(text) ?? parsed;
+}
+
 export function tryParseSalesOrderChoiceBlocks(text: string): ParsedChoiceBlocks | null {
   if (!text) return null;
   const normalized = normalizePlatformQuotes(text);
@@ -267,11 +312,12 @@ export function tryParseSalesOrderChoiceBlocks(text: string): ParsedChoiceBlocks
   if (missing?.blocks.length) return missing;
 
   const narrative = parseSalesOrderNarrativeSections(normalized);
-  if (narrative?.blocks.length) return applyShipmentYesNoMatchOptions(narrative);
+  if (narrative?.blocks.length) return withNarrativeEntityFallback(normalized, applyShipmentYesNoMatchOptions(narrative));
 
   if (hasLineStartBracketFieldSections(normalized)) {
     return parseBracketSections(normalized);
   }
 
-  return parseLegacySections(normalized);
+  const legacy = parseLegacySections(normalized);
+  return withNarrativeEntityFallback(normalized, legacy ? applyShipmentYesNoMatchOptions(legacy) : null);
 }

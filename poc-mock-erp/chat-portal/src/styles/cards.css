@@ -16,6 +16,11 @@
 .doc-card.cap-accent-success { border-left-color: var(--success); }
 .doc-card-generic { border-left-color: var(--line-strong); }
 .doc-card-error { border-left-color: var(--danger) !important; }
+.doc-card-error .doc-card-head {
+  background: linear-gradient(180deg, #fff8f8 0%, #fff5f5 100%);
+  border-bottom-color: #ffe0e0;
+}
+.doc-card-error .doc-card-title { color: var(--text); }
 .doc-card-head {
   display: flex;
   align-items: flex-start;
@@ -48,34 +53,67 @@
   margin-top: 4px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-.doc-card-badge {
-  flex: none;
-  font-size: 11px;
+/* doc-card-badge 已替换为 shadcn Badge 组件 */
+
+.doc-order-result-message {
+  margin: 0;
+  padding: 0 var(--doc-pad-x) 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.doc-result-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 var(--doc-pad-x) 12px;
+}
+.doc-result-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.doc-result-warning strong {
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: #fff7e6;
-  color: #d48806;
-  border: 1px solid #ffd591;
-  line-height: 1.35;
 }
-.doc-card-badge-info {
-  background: var(--accent-blue-soft);
-  color: var(--accent-blue);
-  border-color: rgba(2, 92, 172, 0.2);
+.doc-result-warning--warning {
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #ad6800;
 }
-.doc-card-badge-warn {
-  background: #fff1f0;
+.doc-result-warning--error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
   color: #cf1322;
-  border-color: #ffa39e;
 }
-.doc-card-badge-success {
-  background: #f6ffed;
-  color: #389e0d;
-  border-color: #b7eb8f;
+.doc-result-group-title {
+  padding: 14px var(--doc-pad-x) 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
 }
-.doc-result-card .doc-card-body {
-  display: none;
+.doc-result-extras-wrap {
+  border-top: 1px solid var(--line);
+  padding: 8px var(--doc-pad-x) 12px;
+}
+.doc-result-extras-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.doc-result-extras {
+  margin-top: 4px;
 }
 .doc-order-result-no {
   display: flex;
@@ -113,13 +151,6 @@
   background: #f6ffed;
   border-color: #95de64;
 }
-}
-.doc-order-result-message {
-  margin: 0;
-  padding: 0 var(--doc-pad-x) 18px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-secondary);
 }
 .doc-section--basic .doc-field-grid {
   padding-top: 0;
@@ -162,29 +193,8 @@
 .doc-review-summary-fail .doc-review-summary-value {
   color: #cf1322;
 }
-.doc-audit-result {
-  display: inline-block;
-  font-weight: 600;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  line-height: 1.4;
-}
-.doc-audit-result--pass {
-  color: #389e0d;
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
-}
-.doc-audit-result--fail {
-  color: #cf1322;
-  background: #fff1f0;
-  border: 1px solid #ffa39e;
-}
-.doc-audit-result--neutral {
-  color: var(--text);
-  background: #f5f5f5;
-  border: 1px solid var(--line);
-}
+/* doc-audit-result 已替换为 shadcn Badge 组件 */
+
 .doc-raw-compare {
   display: flex;
   flex-direction: column;
@@ -211,11 +221,7 @@
 .doc-section--audit .doc-section-table td.doc-audit-cell {
   vertical-align: top;
 }
-.doc-section--audit .doc-section-table td.doc-audit-cell .doc-audit-result {
-  white-space: normal;
-  word-break: break-word;
-  max-width: 100%;
-}
+/* .doc-audit-result 已替换为 Badge */
 .doc-section--audit .doc-section-table td.doc-raw-cell {
   vertical-align: top;
 }
@@ -426,6 +432,90 @@
 .choice-card-reminder .choice-card-icon {
   background: rgba(2, 92, 172, 0.12);
   color: var(--primary);
+}
+/* 接口错误卡：与 choice-card 同结构，红色强调 */
+.choice-card-error {
+  border-left-color: var(--danger);
+}
+.choice-card-error .choice-card-head {
+  background: linear-gradient(180deg, #fff8f8 0%, #fff5f5 100%);
+}
+.choice-card-error .choice-card-icon {
+  background: rgba(207, 19, 34, 0.1);
+  color: var(--danger);
+}
+.choice-card-body-error {
+  gap: 12px;
+  padding-top: 12px;
+}
+.choice-error-fact {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fafbfc;
+}
+.choice-error-fact-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  word-break: break-word;
+}
+.choice-error-details-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.choice-error-details-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .choice-error-details-trigger:hover {
+    color: var(--text);
+  }
+}
+.choice-error-details-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 4px 14px;
+}
+.choice-error-details-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  font-size: 13px;
+}
+.choice-error-details-label {
+  flex: none;
+  color: var(--muted);
+  font-weight: 500;
+}
+.choice-error-details-value {
+  text-align: right;
+  color: var(--text);
+  word-break: break-word;
+}
+.choice-error-details-value--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+.choice-error-details-divider {
+  height: 1px;
+  background: var(--line);
 }
 .choice-card-body-reminder {
   padding-top: 0;

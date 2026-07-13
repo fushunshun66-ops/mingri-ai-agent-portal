@@ -1,4 +1,5 @@
 import { FLOW_META, detectDocKind } from "../flowMeta";
+import { Badge } from "@/components/ui/badge";
 import { ContractReviewDoc } from "./ContractReviewDoc";
 import { isListFieldLabel, tryParseObjectArray } from "../../utils/fieldValue";
 import {
@@ -93,7 +94,15 @@ export function BusinessDocCard({
           <h3 className="doc-card-title">{displayTitle}</h3>
           {docNo && <span className="doc-card-no">{docNo}</span>}
         </div>
-        <span className="doc-card-badge">{level === "error" ? "异常" : "待确认"}</span>
+        <Badge
+          variant={level === "error" ? "destructive" : "outline"}
+          className={level === "error"
+            ? "text-[11px] font-semibold px-[10px] py-[4px] rounded bg-[#fff0f0] text-[#ff4d4f] border-[#ffccc7]"
+            : "text-[11px] font-semibold px-[10px] py-[4px] rounded bg-[#fff7e6] text-[#d48806] border-[#ffd591]"
+          }
+        >
+          {level === "error" ? "异常" : "待确认"}
+        </Badge>
       </div>
       <div className="doc-card-body">
         {scalarFields.length > 0 && <DocFieldGrid fields={scalarFields} />}

@@ -1,9 +1,11 @@
+import { LazyImage } from "../../LazyImage";
+
 export function FileBlock({ name, url, mime }: { name: string; url?: string | null; mime?: string | null }) {
   const isImage = mime?.startsWith("image") || /\.(png|jpe?g|gif|webp)$/i.test(name);
   return (
     <div className="block-file">
       {isImage && url ? (
-        <img src={url} alt={name} className="block-file-image" />
+        <LazyImage src={url} alt={name} className="block-file-image" />
       ) : (
         <div className="block-file-card">
           <span className="block-file-icon">📄</span>

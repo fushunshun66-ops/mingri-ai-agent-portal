@@ -1,8 +1,12 @@
 import type { Flow, Session } from "../types/message";
 import mrjtLogo from "../assets/mrjt-logo.png";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { FLOW_META } from "./flowMeta";
 import { IconNew } from "./icons";
+import { SwipeSessionItem } from "./SwipeSessionItem";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { useCallback, useMemo, useState } from "react";
 
 function formatSessionTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -58,97 +62,157 @@ export function Sidebar({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set());
   const runningCount = sessions.filter(
     (s) => resolveSessionStatus(s.id, activeId, sending, uploading) === "running",
   ).length;
 
-  return (
-    <>
-      <div
-        className={`sidebar-backdrop${isOpen ? " visible" : ""}`}
-        onClick={onClose}
-      />
-      <aside className={`sidebar${isOpen ? " open" : ""}`}>
-      <button type="button" className="brand" onClick={onGoHome} aria-label="返回首页">
-        <img src={mrjtLogo} alt="明日控股" className="brand-logo" />
-        <div className="brand-text">
-          <span className="brand-sub">智能业务入口</span>
-        </div>
-      </button>
+  const visibleSessions = useMemo(
+    () => sessions.filter((s) => !archivedIds.has(s.id)),
+    [sessions, archivedIds]
+  );
 
-      <Button className="new-chat-btn" onClick={onGoHome}>
-        <IconNew />
-        新建业务办理
-      </Button>
+  const handleDeleteSession = useCallback((id: string) => {
+    setArchivedIds((prev) => new Set(prev).add(id));
+  }, []);
 
-      {showFlowPicker && (
-        <nav className="sidebar-modules" aria-label="业务模块">
-          <div className="sidebar-section-head sidebar-section-head--nav">
-            <span className="sidebar-section-label sidebar-section-label--nav">业务模块</span>
-            <span className="sidebar-section-hint">切换办理类型</span>
+  const handleArchiveSession = useCallback((id: string) => {
+    setArchivedIds((prev) => new Set(prev).add(id));
+  }, []);
+
+  const handleLoadSession = useCallback(
+    (id: string) => {
+      setExpandedId(null);
+      onLoadSession(id);
+    },
+    [onLoadSession]
+  );
+
+  function renderContent() {
+    return (
+      <>
+        <button type="button" className="brand" onClick={onGoHome} aria-label="返回首页">
+          <img src={mrjtLogo} alt="明日控股" className="brand-logo" />
+          <div className="brand-text">
+            <span className="brand-sub">智能业务入口</span>
           </div>
-          <div className="sidebar-module-panel">
-            {flows.map((flow) => (
-              <button
-                key={flow.flowKey}
-                type="button"
-                className={`flow-chip ${draftFlowKey === flow.flowKey ? "active" : ""}`}
-                onClick={() => onNewSession(flow.flowKey)}
+        </button>
+
+        <button type="button" className="new-chat-btn" onClick={onGoHome} style={{ background: "var(--primary)", color: "#fff" }}>
+          <IconNew />
+          新建业务办理
+        </button>
+
+        {showFlowPicker && (
+          <nav className="sidebar-modules" aria-label="业务模块">
+            <div className="sidebar-section-head sidebar-section-head--nav">
+              <span className="sidebar-section-label sidebar-section-label--nav">业务模块</span>
+              <span className="sidebar-section-hint">切换办理类型</span>
+            </div>
+            <div className="sidebar-module-panel">
+              {flows.map((flow) => (
+                <button
+                  key={flow.flowKey}
+                  type="button"
+                  className={`flow-chip ${draftFlowKey === flow.flowKey ? "active" : ""}`}
+                  onClick={() => onNewSession(flow.flowKey)}
+                >
+                  <span className={`flow-dot ${FLOW_META[flow.flowKey]?.accent || ""}`} />
+                  <span className="flow-chip-name">{flow.name}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
+        )}
+
+        <div className={`sidebar-history ${showFlowPicker ? "sidebar-history--split" : ""}`}>
+          <div className="sidebar-section-head sidebar-section-head--history">
+            <span className="sidebar-section-label sidebar-section-label--history">办理记录</span>
+            {runningCount > 0 && (
+              <Badge variant="secondary" className="sidebar-running-count text-xs" style={{ color: "var(--primary)" }}>
+                {runningCount} 进行中
+              </Badge>
+            )}
+          </div>
+          <div className="session-list">
+          {visibleSessions.map((s) => {
+            const meta = FLOW_META[s.flow_key];
+            const status = resolveSessionStatus(s.id, activeId, sending, uploading);
+            const statusLabel = STATUS_LABEL[status];
+            const isRunning = status === "running";
+            return (
+              <SwipeSessionItem
+                key={s.id}
+                session={s}
+                isActive={status === "active" || isRunning}
+                isRunning={isRunning}
+                onLoad={handleLoadSession}
+                onDelete={handleDeleteSession}
+                onArchive={handleArchiveSession}
+                expandedId={expandedId}
+                onExpand={setExpandedId}
               >
-                <span className={`flow-dot ${FLOW_META[flow.flowKey]?.accent || ""}`} />
-                <span className="flow-chip-name">{flow.name}</span>
-              </button>
-            ))}
+                <button
+                  type="button"
+                  className={`session-item session-item--${status}`}
+                  aria-current={status === "active" || isRunning ? "true" : undefined}
+                >
+                  <div className="session-item-head">
+                    <span
+                      className={`session-status-dot session-status-dot--${status}`}
+                      aria-hidden
+                      title={statusLabel || undefined}
+                    />
+                    <span className="session-item-title" title={s.title}>{s.title}</span>
+                  </div>
+                  <div className="session-item-foot">
+                    <div className="session-item-meta">
+                      {statusLabel && isRunning && (
+                        <Badge variant="secondary" className="session-status-badge--running text-[10px] font-semibold px-[7px] py-[1px]" style={{ color: "var(--primary)" }}>{statusLabel}</Badge>
+                      )}
+                      {statusLabel && !isRunning && (
+                        <Badge variant="secondary" className="text-[10px] font-semibold px-[7px] py-[1px]" style={{ color: "var(--primary)" }}>{statusLabel}</Badge>
+                      )}
+                      {meta && (() => {
+                        const isBlue = meta.accent === "cap-accent-blue";
+                        return (
+                          <Badge
+                            variant={isBlue ? "secondary" : "outline"}
+                            className="text-[10px] font-semibold px-[6px] py-[1px]"
+                            style={isBlue ? { color: "var(--primary)" } : (meta.accent === "cap-accent-orange"
+                              ? { backgroundColor: "var(--accent-orange-soft)", color: "var(--accent-orange)" }
+                              : { backgroundColor: "var(--accent-purple-soft)", color: "var(--accent-purple)" }
+                            )}
+                          >
+                            {meta.label}
+                          </Badge>
+                        );
+                      })()}
+                    </div>
+                    <span className="session-item-time">{formatSessionTime(s.updated_at || s.created_at)}</span>
+                  </div>
+                </button>
+              </SwipeSessionItem>
+            );
+          })}
+          {visibleSessions.length === 0 && <div className="session-empty">完成首条办理后将显示在此</div>}
           </div>
-        </nav>
-      )}
+        </div>
+      </>
+    );
+  }
 
-      <div className={`sidebar-history ${showFlowPicker ? "sidebar-history--split" : ""}`}>
-        <div className="sidebar-section-head sidebar-section-head--history">
-          <span className="sidebar-section-label sidebar-section-label--history">办理记录</span>
-          {runningCount > 0 && (
-            <span className="sidebar-running-count" aria-live="polite">
-              {runningCount} 进行中
-            </span>
-          )}
-        </div>
-        <div className="session-list">
-        {sessions.map((s) => {
-          const meta = FLOW_META[s.flow_key];
-          const status = resolveSessionStatus(s.id, activeId, sending, uploading);
-          const statusLabel = STATUS_LABEL[status];
-          return (
-            <button
-              key={s.id}
-              type="button"
-              className={`session-item session-item--${status}`}
-              onClick={() => onLoadSession(s.id)}
-              aria-current={status === "active" || status === "running" ? "true" : undefined}
-            >
-              <div className="session-item-head">
-                <span
-                  className={`session-status-dot session-status-dot--${status}`}
-                  aria-hidden
-                  title={statusLabel || undefined}
-                />
-                <span className="session-item-title" title={s.title}>{s.title}</span>
-              </div>
-              <div className="session-item-foot">
-                <div className="session-item-meta">
-                  {statusLabel && (
-                    <span className={`session-status-badge session-status-badge--${status}`}>{statusLabel}</span>
-                  )}
-                  {meta && <span className={`session-item-tag ${meta.accent}`}>{meta.label}</span>}
-                </div>
-                <span className="session-item-time">{formatSessionTime(s.updated_at || s.created_at)}</span>
-              </div>
-            </button>
-          );
-        })}
-        {sessions.length === 0 && <div className="session-empty">完成首条办理后将显示在此</div>}
-        </div>
-      </div>
-    </aside>
-    </>
+  if (!isMobile) {
+    return <aside className="sidebar">{renderContent()}</aside>;
+  }
+
+  return (
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent side="left" className="w-[272px] p-0 h-full overflow-y-auto shadow-[var(--sidebar-shadow)] bg-(--sidebar-bg)" showCloseButton={false}>
+        {renderContent()}
+      </SheetContent>
+    </Sheet>
   );
 }
