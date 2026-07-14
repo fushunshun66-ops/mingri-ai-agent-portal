@@ -238,13 +238,3 @@
     padding: 12px 24px 4px;
   }
 }
-
-/* 超大横屏（iPad Pro 12.9"）内容区收窄 */
-@media (min-width: 1024px) and (orientation: landscape) {
-  .composer {
-    max-width: 800px;
-  }
-  .message-list-inner {
-    max-width: 800px;
-  }
-}

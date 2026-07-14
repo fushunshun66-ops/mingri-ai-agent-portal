@@ -101,3 +101,67 @@ export function IconMic() {
     </svg>
   );
 }
+
+/** idle 静态高度（与原先固定 line 视觉一致） */
+const WAVE_IDLE_HEIGHTS = [6, 14, 8, 12] as const;
+/** 假频谱权重 */
+const WAVE_BAR_WEIGHTS = [0.55, 1, 0.7, 0.9] as const;
+const WAVE_BASE = 4;
+const WAVE_FACTOR = 10;
+const WAVE_XS = [6, 10, 14, 18] as const;
+
+/** 四条高低不一的竖杠声波图标；颜色跟随 currentColor */
+export function IconWaveform({
+  level = 0,
+  live = false,
+}: {
+  level?: number;
+  /** 录音态：高度随 level 变化；idle 保持静态 */
+  live?: boolean;
+}) {
+  const clamped = Math.min(1, Math.max(0, level));
+  const heights = live
+    ? WAVE_BAR_WEIGHTS.map((w) => WAVE_BASE + clamped * WAVE_FACTOR * w)
+    : [...WAVE_IDLE_HEIGHTS];
+
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      aria-hidden="true"
+      className={live ? "icon-waveform-live" : undefined}
+    >
+      {heights.map((h, i) => {
+        const x = WAVE_XS[i]!;
+        const cy = 12;
+        const maxH = live ? WAVE_BASE + WAVE_FACTOR * WAVE_BAR_WEIGHTS[i]! : h;
+        const scaleY = maxH > 0 ? h / maxH : 1;
+        return (
+          <line
+            key={i}
+            data-wave-bar
+            data-height={h}
+            className="wave-bar"
+            x1={x}
+            y1={cy - maxH / 2}
+            x2={x}
+            y2={cy + maxH / 2}
+            style={
+              live
+                ? {
+                    transform: `scaleY(${scaleY})`,
+                    transformOrigin: `${x}px ${cy}px`,
+                  }
+                : undefined
+            }
+          />
+        );
+      })}
+    </svg>
+  );
+}

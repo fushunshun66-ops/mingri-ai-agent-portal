@@ -4,10 +4,12 @@ import type { ChoiceSelectHandler } from "../ChoiceConfirmCard";
 import { ChoiceConfirmStack } from "../ChoiceConfirmCard";
 import { ShipmentDoc } from "../ShipmentDoc";
 import { OrderResultCard } from "../OrderResultCard";
+import { InfoMissingCard } from "../InfoMissingCard";
 import { LazyImage } from "../../LazyImage";
 import { parseChoiceBlocksFromText } from "../../../utils/choiceParser";
 import { tryParseShipmentDocFromMarkdown } from "../../../utils/structuredDocMarkdown";
 import { tryOrderResultBlock } from "../../../utils/orderResultParser";
+import { tryParseInfoMissing } from "../../../utils/infoMissing";
 
 export function MarkdownBlock({
   messageId,
@@ -80,6 +82,16 @@ export function MarkdownBlock({
       </div>
     );
   }
+
+  const infoMissing = tryParseInfoMissing(content);
+  if (infoMissing) {
+    return (
+      <div className="block-primary">
+        <InfoMissingCard title={infoMissing.title} fields={infoMissing.fields} hint={infoMissing.hint} />
+      </div>
+    );
+  }
+
   return (
     <div className="block-markdown">
       <ReactMarkdown

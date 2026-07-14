@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { ComposerQuickPrompts, type QuickPrompt } from "./ComposerQuickPrompts";
-import { IconAttach, IconChevronRight, IconClose, IconMic, IconSend } from "./icons";
+import { IconAttach, IconChevronRight, IconClose, IconSend, IconWaveform } from "./icons";
 import { FLOW_META } from "./flowMeta";
 import type { AudioRecorderHandle } from "../types/voice";
 
@@ -113,11 +113,6 @@ export function Composer({
     }
   }, [showAgentPicker]);
 
-  const isRecording = voiceRecorder?.status === "recording";
-  const textareaPlaceholder = isRecording
-    ? "正在录音，停止后将显示识别文字…"
-    : placeholder;
-
   const onTextareaKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -148,12 +143,7 @@ export function Composer({
   };
 
   const canSend = hasComposerPayload(value, chips, attachments.length > 0 || localFiles.length > 0);
-
-  const formatDuration = (sec: number): string => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${String(s).padStart(2, "0")}`;
-  };
+  const isRecording = voiceRecorder?.status === "recording";
 
   const pickQuickPrompt = (text: string) => {
     onChange(text);
@@ -176,7 +166,7 @@ export function Composer({
         />
       )}
       <div
-        className={`composer ${isHome ? "composer-home" : ""} ${dragOver ? "drag-over" : ""} ${voiceRecorder?.status === "recording" ? "composer-recording" : ""}`}
+        className={`composer ${isHome ? "composer-home" : ""} ${dragOver ? "drag-over" : ""} ${isRecording ? "composer-recording" : ""}`}
         onDragEnter={handleDragEnter}
         onDragOver={(e) => canAttach && e.preventDefault()}
         onDragLeave={handleDragLeave}
@@ -286,18 +276,13 @@ export function Composer({
             <button className="voice-error-close" onClick={() => voiceRecorder.dismissError()} aria-label="关闭">✕</button>
           </div>
         )}
-        {isRecording && (
-          <div className="voice-recording-hint" aria-live="polite">
-            正在聆听… 识别结果将在停止录音后填入输入框
-          </div>
-        )}
         <Textarea
           ref={textareaRef}
           className="composer-textarea"
           value={isRecording ? "" : value}
           readOnly={isRecording}
           aria-label="消息输入"
-          placeholder={textareaPlaceholder}
+          placeholder={placeholder}
           onChange={(e) => {
             onChange(e.target.value);
             syncMentionRange(e.target.value, e.target.selectionStart ?? e.target.value.length);
@@ -312,36 +297,39 @@ export function Composer({
               <Button
                 variant="outline"
                 size="sm"
-                className={`tool-btn ${voiceRecorder.status === "recording" ? "tool-btn-recording" : ""}`}
-                title={voiceRecorder.status === "recording" ? `停止录音 · ${voiceRecorder.durationSec}s` : "语音输入"}
+                className={`tool-btn ${isRecording ? "tool-btn-recording" : ""}`}
+                title={
+                  isRecording
+                    ? `结束录音 · ${voiceRecorder.durationSec}s`
+                    : "语音输入"
+                }
+                aria-label={
+                  isRecording
+                    ? `结束录音 · ${voiceRecorder.durationSec}s`
+                    : "语音输入"
+                }
                 disabled={voiceRecorder.status === "requesting" || voiceRecorder.status === "error" || sending || uploading}
                 onClick={async () => {
-                  if (voiceRecorder.status === "recording") {
-                    const spoken = await voiceRecorder.stop();
-                    if (spoken && onVoiceText) onVoiceText(spoken);
-                    requestAnimationFrame(() => {
-                      const el = document.querySelector(".composer .composer-textarea") as HTMLTextAreaElement | null;
-                      el?.focus();
-                      const len = el?.value.length ?? 0;
-                      el?.setSelectionRange(len, len);
-                    });
-                  } else {
-                    voiceRecorder.start();
+                  try {
+                    if (voiceRecorder.status === "recording") {
+                      const spoken = await voiceRecorder.stop();
+                      if (spoken && onVoiceText) onVoiceText(spoken);
+                      requestAnimationFrame(() => {
+                        const el = document.querySelector(".composer .composer-textarea") as HTMLTextAreaElement | null;
+                        el?.focus();
+                        const len = el?.value.length ?? 0;
+                        el?.setSelectionRange(len, len);
+                      });
+                    } else {
+                      await voiceRecorder.start();
+                    }
+                  } catch {
+                    // 失败由 voiceRecorder.error UI 展示，避免未处理 rejection
                   }
                 }}
               >
-                {voiceRecorder.status === "recording" ? `● ${formatDuration(voiceRecorder.durationSec)}` : <IconMic />}
-              </Button>
-            )}
-            {voiceRecorder?.isSupported && voiceRecorder.status === "recording" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="tool-btn tool-btn-cancel"
-                title="取消录音"
-                onClick={() => voiceRecorder.cancel()}
-              >
-                取消
+                <IconWaveform live={isRecording} level={voiceRecorder.level ?? 0} />
+                {isRecording ? <span>结束</span> : null}
               </Button>
             )}
             {canAttach && (
