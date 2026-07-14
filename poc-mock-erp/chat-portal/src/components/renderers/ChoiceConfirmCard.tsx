@@ -5,6 +5,8 @@ export type ChoiceSelectContext = {
   optionId: string;
   fieldLabel: string;
   displayLabel: string;
+  /** 为 true 时表单动作直接发送，不填入 composer 芯片 */
+  sendImmediately?: boolean;
 };
 
 export type ChoiceSelectHandler = (message: string, context: ChoiceSelectContext) => void;

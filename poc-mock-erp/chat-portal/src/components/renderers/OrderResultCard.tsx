@@ -9,6 +9,8 @@ import type {
   OrderResultSection,
   OrderResultWarning,
 } from "../../utils/orderResultEnricher";
+import { localizeOrderResultExtras } from "../../utils/extraFieldLabel";
+import resultFieldProfiles from "../../config/resultFieldProfiles.json";
 
 const DEFAULT_MESSAGE = "销售订单已完成，可在ERP中查看详情。";
 
@@ -35,7 +37,13 @@ export function OrderResultCard({
   const meta = FLOW_META[schemaKey] ?? FLOW_META.sales_order;
   const displayTitle = title?.trim() || "销售订单已生成";
   const displayMessage = message?.trim() || DEFAULT_MESSAGE;
-  const hasRichBody = Boolean(fieldGroups?.length || sections?.length || extras?.length);
+  const profileLabels =
+    (resultFieldProfiles as Record<string, { extraFieldLabels?: Record<string, string> }>)[schemaKey]
+      ?.extraFieldLabels;
+  const displayExtras = extras?.length
+    ? localizeOrderResultExtras(extras, profileLabels)
+    : undefined;
+  const hasRichBody = Boolean(fieldGroups?.length || sections?.length || displayExtras?.length);
 
   return (
     <div className="doc-card cap-accent-success doc-result-card">
@@ -91,7 +99,7 @@ export function OrderResultCard({
           />
         ))}
 
-        {extras?.length ? (
+        {displayExtras?.length ? (
           <section className="doc-result-extras-wrap">
             <button
               type="button"
@@ -99,11 +107,11 @@ export function OrderResultCard({
               aria-expanded={extrasOpen}
               onClick={() => setExtrasOpen((open) => !open)}
             >
-              更多字段 ({extras.length}) {extrasOpen ? "▾" : "▸"}
+              更多字段 ({displayExtras.length}) {extrasOpen ? "▾" : "▸"}
             </button>
             {extrasOpen ? (
               <div className="doc-result-extras">
-                <DocFieldGrid fields={extras} />
+                <DocFieldGrid fields={displayExtras} />
               </div>
             ) : null}
           </section>

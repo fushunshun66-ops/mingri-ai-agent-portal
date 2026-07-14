@@ -1,12 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ApiErrorCard } from "../ApiErrorCard";
+import { tryParseMasterDataMissing } from "../../../utils/masterDataMissing";
 
 const SAMPLE_FACTS = [
   { key: "field", label: "问题字段", value: "计量单位" },
   { key: "cause", label: "错误原因", value: "录入「ton」不合法，请检查是否与系统档案一致" },
 ];
 const SAMPLE_SUGGESTION = "请确认商品计量单位与系统档案一致，修正后重新提交。";
+
+const MASTER_DATA_LOG =
+  "【主数据缺失】物料主数据缺失，请联系管理员及时补充物料主数据！ 联系人：XXX，178XXXX0903       后续将上线物料主数据自动创建功能，请期待！";
 
 describe("ApiErrorCard", () => {
   it("uses choice-card layout with structured fact rows", () => {
@@ -53,6 +57,31 @@ describe("ApiErrorCard", () => {
       <ApiErrorCard title="处理未成功" suggestion={SAMPLE_SUGGESTION} factFields={SAMPLE_FACTS} detailFields={[]} />,
     );
 
+    expect(screen.queryByRole("button", { name: /技术详情/ })).not.toBeInTheDocument();
+  });
+
+  it("renders master-data-missing parse result as red error card without chips", () => {
+    const parsed = tryParseMasterDataMissing(MASTER_DATA_LOG);
+    expect(parsed).not.toBeNull();
+
+    render(
+      <ApiErrorCard
+        title={parsed!.title}
+        suggestion={parsed!.hint}
+        factFields={parsed!.factFields}
+        detailFields={[]}
+      />,
+    );
+
+    expect(document.querySelector(".choice-card-error")).toBeTruthy();
+    expect(document.querySelector(".choice-card-reminder")).toBeNull();
+    expect(document.querySelector(".info-missing-chip")).toBeNull();
+    expect(screen.getByText("主数据缺失")).toBeInTheDocument();
+    expect(screen.getByText("缺失类型")).toBeInTheDocument();
+    expect(screen.getByText("物料主数据")).toBeInTheDocument();
+    expect(screen.getByText("联系人")).toBeInTheDocument();
+    expect(screen.getByText("XXX，178XXXX0903")).toBeInTheDocument();
+    expect(screen.getByText(/请联系管理员及时补充物料主数据/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /技术详情/ })).not.toBeInTheDocument();
   });
 });

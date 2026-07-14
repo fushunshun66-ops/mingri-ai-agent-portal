@@ -51,6 +51,7 @@ export function useChatSession() {
   };
 
   const chat = useChat(depsRef);
+  choices.sendImmediatelyRef.current = chat.handleSend;
 
   // 完整重置：goHome / handleNewSession 触发
   onFullResetRef.current = () => {

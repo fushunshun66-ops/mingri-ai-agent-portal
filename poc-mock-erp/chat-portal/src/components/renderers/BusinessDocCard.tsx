@@ -121,15 +121,18 @@ export function BusinessDocCard({
       <DocCardFoot
         hint={
           selectedBySlot?.[buildDocActionSlotKey(messageId, blockIndex, "confirm")] === "confirm"
-            ? "已填入输入框，确认后发送"
-            : "点击后将选项填入下方输入框"
+            ? "已提交"
+            : "点击后将直接发送"
         }
         actions={
           <DocActionButton
             label="确认提交"
             primary
             filled={selectedBySlot?.[buildDocActionSlotKey(messageId, blockIndex, "confirm")] === "confirm"}
-            disabled={disabled}
+            disabled={
+              disabled ||
+              selectedBySlot?.[buildDocActionSlotKey(messageId, blockIndex, "confirm")] === "confirm"
+            }
             onClick={() =>
               triggerDocAction(onAction, {
                 messageId,
@@ -137,6 +140,7 @@ export function BusinessDocCard({
                 actionId: "confirm",
                 fieldLabel: displayTitle,
                 buttonLabel: "确认提交",
+                sendImmediately: true,
               })
             }
           />

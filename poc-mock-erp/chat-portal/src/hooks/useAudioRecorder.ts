@@ -36,7 +36,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
   function flushLevel() {
     cancelAnimationFrame(levelRafRef.current);
     levelRafRef.current = requestAnimationFrame(() => {
-      setLevel(levelRef.current);
+      setLevel(statusRef.current === "recording" ? levelRef.current : 0);
     });
   }
 
@@ -135,6 +135,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
             setStatus("error");
             statusRef.current = "error";
             resolveStop();
+            cleanup();
             return;
           }
           if (msg.text) {
@@ -149,7 +150,11 @@ export function useAudioRecorder(): AudioRecorderHandle {
 
       ws.onclose = () => {
         resolveStop();
-        if (statusRef.current === "recording") setStatus("error");
+        if (statusRef.current === "recording") {
+          setStatus("error");
+          statusRef.current = "error";
+          cleanup();
+        }
       };
 
       node.onaudioprocess = (e) => {
@@ -162,18 +167,23 @@ export function useAudioRecorder(): AudioRecorderHandle {
           ws.send(pcm.buffer);
         }
         // 同一段 PCM 循环内顺便算能量，不改变推流逻辑
-        levelRef.current = computeRmsLevel(input);
-        flushLevel();
+        if (statusRef.current === "recording") {
+          levelRef.current = computeRmsLevel(input);
+          flushLevel();
+        } else {
+          levelRef.current = 0;
+          flushLevel();
+        }
       };
     } catch (err) {
       const msg =
         (err as DOMException)?.name === "NotAllowedError"
           ? "请允许麦克风权限后重试"
           : `录音启动失败：${(err as Error).message}`;
+      cleanup();
       setError(msg);
       setStatus("error");
       statusRef.current = "error";
-      resetLevel();
     }
   }, [status, cleanup]);
 
@@ -196,9 +206,9 @@ export function useAudioRecorder(): AudioRecorderHandle {
       }
     });
 
+    statusRef.current = "idle";
     cleanup();
     setStatus("idle");
-    statusRef.current = "idle";
     setPartialText("");
     partialRef.current = "";
     return spoken;
@@ -210,9 +220,9 @@ export function useAudioRecorder(): AudioRecorderHandle {
       stopTimerRef.current = null;
     }
     stopResolveRef.current = null;
+    statusRef.current = "idle";
     cleanup();
     setStatus("idle");
-    statusRef.current = "idle";
     setPartialText("");
     setError(null);
     setDurationSec(0);
@@ -221,11 +231,11 @@ export function useAudioRecorder(): AudioRecorderHandle {
   }, [cleanup]);
 
   const dismissError = useCallback(() => {
+    cleanup();
     setError(null);
     setStatus("idle");
     statusRef.current = "idle";
-    resetLevel();
-  }, []);
+  }, [cleanup]);
 
   useEffect(() => () => { cleanup(); }, [cleanup]);
 

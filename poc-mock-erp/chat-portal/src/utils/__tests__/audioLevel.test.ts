@@ -34,4 +34,16 @@ describe("computeRmsLevel", () => {
   it("负 gain 也会被 clamp 到 ≥0", () => {
     expect(computeRmsLevel([0.5], -10)).toBe(0);
   });
+
+  it("含 NaN 的采样最终返回有限数 0，不向外泄漏 NaN", () => {
+    expect(computeRmsLevel([NaN, NaN])).toBe(0);
+    expect(Number.isFinite(computeRmsLevel([NaN, 0.5]))).toBe(true);
+    expect(computeRmsLevel([NaN, 0.5])).toBe(0);
+  });
+
+  it("Infinity 经 clamp 后为 1；-Infinity / NaN gain 不向外泄漏非有限值", () => {
+    expect(computeRmsLevel([1], Infinity)).toBe(1);
+    expect(computeRmsLevel([1], -Infinity)).toBe(0);
+    expect(computeRmsLevel([0.5], NaN)).toBe(0);
+  });
 });

@@ -41,6 +41,31 @@ describe("tryOrderResultFromObject (chat-portal)", () => {
     expect(result!.warnings?.[0]?.message).toBe("E签宝报错");
     expect(result!.sections?.[0]?.rows?.length).toBe(1);
   });
+
+  it("extras use Chinese labels and formatted values", () => {
+    const result = tryOrderResultFromObject({
+      success: true,
+      message: "订单创建成功",
+      orderCode: "SO260713000019",
+      raw: {
+        data: {
+          pk_customer_name: "上海华悦",
+          taxAmount: 100,
+          isExitTax: "N",
+          pk_salesman_name: "兰岚",
+          pk_sign_ver: "12345",
+          stamp: false,
+          so_saleorder_bList: [],
+        },
+      },
+    });
+    expect(result).not.toBeNull();
+    const extras = result!.extras ?? [];
+    expect(extras.some((f) => f.key === "isExitTax" && f.label === "是否出口退税" && f.value === "N")).toBe(true);
+    expect(extras.some((f) => f.key === "pk_salesman_name" && f.label === "业务员")).toBe(true);
+    expect(extras.some((f) => f.key === "pk_sign_ver")).toBe(false);
+    expect(extras.some((f) => f.key === "stamp" && f.value === "false")).toBe(true);
+  });
 });
 
 describe("tryOrderResultBlock (chat-portal)", () => {

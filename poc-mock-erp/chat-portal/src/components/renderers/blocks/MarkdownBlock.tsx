@@ -5,11 +5,13 @@ import { ChoiceConfirmStack } from "../ChoiceConfirmCard";
 import { ShipmentDoc } from "../ShipmentDoc";
 import { OrderResultCard } from "../OrderResultCard";
 import { InfoMissingCard } from "../InfoMissingCard";
+import { ApiErrorCard } from "../ApiErrorCard";
 import { LazyImage } from "../../LazyImage";
 import { parseChoiceBlocksFromText } from "../../../utils/choiceParser";
 import { tryParseShipmentDocFromMarkdown } from "../../../utils/structuredDocMarkdown";
 import { tryOrderResultBlock } from "../../../utils/orderResultParser";
 import { tryParseInfoMissing } from "../../../utils/infoMissing";
+import { tryParseMasterDataMissing } from "../../../utils/masterDataMissing";
 
 export function MarkdownBlock({
   messageId,
@@ -88,6 +90,20 @@ export function MarkdownBlock({
     return (
       <div className="block-primary">
         <InfoMissingCard title={infoMissing.title} fields={infoMissing.fields} hint={infoMissing.hint} />
+      </div>
+    );
+  }
+
+  const masterDataMissing = tryParseMasterDataMissing(content);
+  if (masterDataMissing) {
+    return (
+      <div className="block-primary">
+        <ApiErrorCard
+          title={masterDataMissing.title}
+          suggestion={masterDataMissing.hint}
+          factFields={masterDataMissing.factFields}
+          detailFields={[]}
+        />
       </div>
     );
   }

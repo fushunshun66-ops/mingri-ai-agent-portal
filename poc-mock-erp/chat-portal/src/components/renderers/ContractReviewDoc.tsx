@@ -105,13 +105,13 @@ export function ContractReviewDoc({
         ))}
       </div>
       <DocCardFoot
-        hint={confirmFilled ? "已填入输入框，确认后发送" : "点击后将选项填入下方输入框"}
+        hint={confirmFilled ? "已提交" : "点击后将直接发送"}
         actions={
           <DocActionButton
             label={confirmLabel}
             primary
             filled={confirmFilled}
-            disabled={disabled}
+            disabled={disabled || confirmFilled}
             onClick={() =>
               triggerDocAction(onAction, {
                 messageId,
@@ -119,6 +119,7 @@ export function ContractReviewDoc({
                 actionId: "confirm",
                 fieldLabel: displayTitle,
                 buttonLabel: confirmLabel,
+                sendImmediately: true,
               })
             }
           />

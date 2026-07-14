@@ -6,7 +6,7 @@
   "flows": {
     "sales_order": {
       "name": "智能销售订单生成",
-      "agentSn": "agent-62145546d316486f975ccee",
+      "agentSn": "agent-79a39d9a53a240c8a744ce4",
       "description": "口语下单：抽取客户/商品/数量/单价/交期，生成销售订单",
       "inputKey": "Query",
       "acceptsFile": false,

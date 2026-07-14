@@ -20,5 +20,5 @@ export function computeRmsLevel(
   const level = rms * gain;
   if (level <= 0) return 0;
   if (level >= 1) return 1;
-  return level;
+  return Number.isFinite(level) ? level : 0;
 }

@@ -56,13 +56,13 @@ export function ShipmentDoc({
         ))}
       </div>
       <DocCardFoot
-        hint={filled ? "已填入输入框，确认后发送" : "点击后将选项填入下方输入框"}
+        hint={filled ? "已提交" : "点击后将直接发送"}
         actions={
           <DocActionButton
             label={CONFIRM_LABEL}
             primary
             filled={filled}
-            disabled={disabled}
+            disabled={disabled || filled}
             onClick={() =>
               triggerDocAction(onAction, {
                 messageId,
@@ -70,6 +70,7 @@ export function ShipmentDoc({
                 actionId: "confirm",
                 fieldLabel: displayTitle,
                 buttonLabel: CONFIRM_LABEL,
+                sendImmediately: true,
               })
             }
           />

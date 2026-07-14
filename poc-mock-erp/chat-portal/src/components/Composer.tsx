@@ -96,12 +96,15 @@ export function Composer({
     });
   };
 
+  const canSend = hasComposerPayload(value, chips, attachments.length > 0 || localFiles.length > 0);
+  const isRecording = voiceRecorder?.status === "recording";
+
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
-  }, [value]);
+  }, [value, isRecording, voiceRecorder?.partialText]);
 
   // Command 组件挂载时 cmdk 会抢夺焦点，需立即还给 textarea
   useEffect(() => {
@@ -141,9 +144,6 @@ export function Composer({
     setDragOver(false);
     onPickFiles(e.dataTransfer.files);
   };
-
-  const canSend = hasComposerPayload(value, chips, attachments.length > 0 || localFiles.length > 0);
-  const isRecording = voiceRecorder?.status === "recording";
 
   const pickQuickPrompt = (text: string) => {
     onChange(text);
@@ -279,16 +279,26 @@ export function Composer({
         <Textarea
           ref={textareaRef}
           className="composer-textarea"
-          value={isRecording ? "" : value}
+          value={isRecording ? (voiceRecorder?.partialText || "") : value}
           readOnly={isRecording}
           aria-label="消息输入"
-          placeholder={placeholder}
+          placeholder={
+            isRecording
+              ? voiceRecorder?.partialText
+                ? undefined
+                : "正在聆听，说完后点「结束」…"
+              : placeholder
+          }
           onChange={(e) => {
+            if (isRecording) return;
             onChange(e.target.value);
             syncMentionRange(e.target.value, e.target.selectionStart ?? e.target.value.length);
           }}
           onKeyDown={onTextareaKey}
-          onClick={(e) => syncMentionRange(value, (e.target as HTMLTextAreaElement).selectionStart ?? value.length)}
+          onClick={(e) => {
+            if (isRecording) return;
+            syncMentionRange(value, (e.target as HTMLTextAreaElement).selectionStart ?? value.length);
+          }}
           rows={1}
         />
         <div className="composer-toolbar">

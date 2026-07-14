@@ -82,19 +82,39 @@ describe("Composer voice button UI", () => {
     expect(voiceRecorder.cancel).not.toHaveBeenCalled();
   });
 
-  it("recording：textarea 只读且不显示既有草稿", () => {
+  it("recording：textarea 只读，展示 partialText，不额外蓝化弹层感", () => {
     render(
       <Composer
         {...baseProps({
           value: "已有草稿",
-          voiceRecorder: mockRecorder({ status: "recording", durationSec: 3 }),
+          voiceRecorder: mockRecorder({
+            status: "recording",
+            durationSec: 3,
+            partialText: "正在说的内容",
+          }),
         })}
       />,
     );
 
     const ta = screen.getByLabelText("消息输入");
     expect(ta).toHaveAttribute("readonly");
+    expect(ta).toHaveValue("正在说的内容");
+    expect(ta.closest(".composer")).toHaveClass("composer-recording");
+  });
+
+  it("recording：尚无识别结果时显示聆听提示，不显示草稿", () => {
+    render(
+      <Composer
+        {...baseProps({
+          value: "已有草稿",
+          voiceRecorder: mockRecorder({ status: "recording", durationSec: 1, partialText: "" }),
+        })}
+      />,
+    );
+
+    const ta = screen.getByLabelText("消息输入");
     expect(ta).toHaveValue("");
+    expect(ta).toHaveAttribute("placeholder", "正在聆听，说完后点「结束」…");
   });
 
   it("idle：点击语音按钮 await start；start 失败不抛未处理 rejection", async () => {

@@ -40,6 +40,8 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
   const [durationByMsg, setDurationByMsg] = useState<Record<string, number>>({});
   const [liveSeconds, setLiveSeconds] = useState(0);
   const [sending, setSending] = useState(false);
+  /** 同步互斥：避免 await 建会话前第二次 handleSend 穿过 sending state */
+  const sendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [streamingId, setStreamingId] = useState<string | null>(null);
   const [intentNotice, setIntentNotice] = useState<string | null>(null);
@@ -75,8 +77,10 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
 
       const hasLocal = deps.localFiles.length > 0;
       const hasUploaded = deps.attachments.length > 0;
-      if (!hasComposerPayload(content, chipList, hasLocal || hasUploaded) || sending) return;
+      if (!hasComposerPayload(content, chipList, hasLocal || hasUploaded) || sendingRef.current) return;
 
+      sendingRef.current = true;
+      setSending(true);
       setError(null);
       setLiveTraces([]);
 
@@ -103,6 +107,8 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
           deps.clearComposer();
         } catch (e) {
           setError((e as Error).message);
+          sendingRef.current = false;
+          setSending(false);
           return;
         }
       }
@@ -139,7 +145,6 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
           created_at: new Date().toISOString(),
         },
       ]);
-      setSending(true);
 
       const updateStream = (patch: Partial<ChatMessage>) =>
         setMessages((prev) => prev.map((m) => (m.id === streamId ? { ...m, ...patch } : m)));
@@ -170,11 +175,12 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
         const latestSessions = await api.listSessions().catch(() => null);
         if (latestSessions) deps.setSessions(() => latestSessions);
         setLiveTraces([]);
+        sendingRef.current = false;
         setSending(false);
         setStreamingId(null);
       }
     },
-    [depsRef, sending],
+    [depsRef],
   );
 
   return {

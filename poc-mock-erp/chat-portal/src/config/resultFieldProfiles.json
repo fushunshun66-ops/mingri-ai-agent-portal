@@ -192,6 +192,7 @@
     "excludePatterns": [
       "^pk_[^_]+$",
       "^item"
-    ]
+    ],
+    "extraFieldLabels": {}
   }
 }

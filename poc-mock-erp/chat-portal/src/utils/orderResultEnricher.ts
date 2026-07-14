@@ -1,4 +1,8 @@
 import profiles from "../config/resultFieldProfiles.json";
+import {
+  resolveExtraFieldLabel,
+  shouldHideExtraFieldKey,
+} from "./extraFieldLabel";
 
 export type OrderResultField = {
   key: string;
@@ -185,14 +189,21 @@ function collectShownKeys(profile: (typeof profiles)["sales_order"]) {
 }
 
 function buildExtras(payload: Record<string, unknown>, profile: (typeof profiles)["sales_order"], shownKeys: Set<string>) {
+  const profileLabels = (profile as { extraFieldLabels?: Record<string, string> }).extraFieldLabels;
   const extras: OrderResultField[] = [];
   for (const [key, raw] of Object.entries(payload)) {
     if (shownKeys.has(key) || shouldExcludeKey(key, profile)) continue;
+    if (shouldHideExtraFieldKey(key)) continue;
     if (!isScalar(raw)) continue;
     const value = String(raw).trim();
     if (!value) continue;
-    extras.push({ key, label: key, value });
+    extras.push({
+      key,
+      label: resolveExtraFieldLabel(key, profileLabels),
+      value,
+    });
   }
+  extras.sort((a, b) => a.label.localeCompare(b.label, "zh-CN"));
   return extras;
 }
 

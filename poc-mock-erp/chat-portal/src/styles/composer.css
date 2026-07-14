@@ -319,10 +319,20 @@
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.35); }
   50% { box-shadow: 0 0 0 6px rgba(255, 77, 79, 0); }
 }
-/* 录音中 textarea */
+/* 录音中：不额外蓝化输入框，保持原界面；仅左侧「结束」态提示录音 */
+.composer.composer-recording:focus-within {
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+.composer-home.composer-recording:focus-within {
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
 .composer-recording .composer-textarea {
-  background: #f8fbff;
-  box-shadow: inset 0 0 0 1px rgba(2, 92, 172, 0.12);
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+  caret-color: transparent;
 }
 
 /* 取消按钮 */

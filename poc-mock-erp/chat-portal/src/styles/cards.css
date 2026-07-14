@@ -115,6 +115,29 @@
 .doc-result-extras {
   margin-top: 4px;
 }
+.doc-result-extras .doc-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  padding: 4px var(--doc-pad-x) 8px;
+}
+.doc-result-extras .doc-field-row {
+  grid-template-columns: 112px minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.doc-result-extras .doc-field-label {
+  word-break: break-word;
+}
+.doc-result-extras .doc-field-value {
+  word-break: break-word;
+}
+@media (max-width: 720px) {
+  .doc-result-extras .doc-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .doc-order-result-no {
   display: flex;
   align-items: center;
@@ -307,11 +330,14 @@
   .doc-section-table tbody tr:hover td { background: #fafbff; }
 }
 
-/* 商品明细：四列比例均衡，金额列右对齐 */
-.doc-section--product .doc-section-table col.col-name { width: 40%; }
-.doc-section--product .doc-section-table col.col-qty { width: 14%; }
-.doc-section--product .doc-section-table col.col-price { width: 22%; }
-.doc-section--product .doc-section-table col.col-amount { width: 26%; }
+/* 商品明细：按列 class 分配宽度（适配常见 6 列，兼容 4 列） */
+.doc-section--product .doc-section-table col.col-name { width: 28%; }
+.doc-section--product .doc-section-table col.col-qty { width: 10%; }
+.doc-section--product .doc-section-table col.col-unit { width: 10%; }
+.doc-section--product .doc-section-table col.col-price { width: 14%; }
+.doc-section--product .doc-section-table col.col-amount { width: 16%; }
+.doc-section--product .doc-section-table col.col-stock { width: 22%; }
+.doc-section--product .doc-section-table col.col-extra { width: 14%; }
 .doc-section--product .doc-section-table td:first-child,
 .doc-section--product .doc-section-table th:first-child {
   white-space: normal;
@@ -363,16 +389,37 @@
   cursor: pointer;
   line-height: 1.35;
   min-height: 36px;
+  opacity: 1;
+  font-family: inherit;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+/* 次要按钮：白底 + 正文色，避免被误认为 disabled 灰态 */
+.doc-btn:not(.doc-btn-primary):not(:disabled) {
+  background: var(--panel);
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--text) 28%, var(--line-strong));
+  opacity: 1;
+  cursor: pointer;
+}
+.doc-btn:focus-visible {
+  outline: 2px solid rgba(2, 92, 172, 0.45);
+  outline-offset: 2px;
 }
 @media (hover: hover) {
   .doc-btn:hover:not(:disabled) {
-  border-color: rgba(2, 92, 172, 0.35);
+  border-color: rgba(2, 92, 172, 0.45);
   box-shadow: var(--shadow-sm);
+}
+  .doc-btn:not(.doc-btn-primary):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 6%, var(--panel));
+  color: var(--text);
 }
 }
 .doc-btn:active:not(:disabled) { transform: translateY(1px); }
-.doc-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.doc-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .doc-btn-primary {
   background: linear-gradient(180deg, #0368bd 0%, var(--primary) 100%);
   border-color: var(--primary);

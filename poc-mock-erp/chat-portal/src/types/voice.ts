@@ -1,4 +1,4 @@
-﻿export type RecorderStatus = "idle" | "requesting" | "recording" | "error";
+export type RecorderStatus = "idle" | "requesting" | "recording" | "error";
 
 export interface AudioRecorderHandle {
   status: RecorderStatus;

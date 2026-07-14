@@ -13,6 +13,27 @@ function isProductTable(columns: string[]): boolean {
   return columns.includes("商品名称") && columns.includes("数量");
 }
 
+function productColClass(col: string): string {
+  switch (col) {
+    case "商品名称":
+      return "col-name";
+    case "数量":
+      return "col-qty";
+    case "单位":
+      return "col-unit";
+    case "含税单价":
+    case "单价":
+      return "col-price";
+    case "含税金额":
+    case "金额":
+      return "col-amount";
+    case "仓库":
+      return "col-stock";
+    default:
+      return "col-extra";
+  }
+}
+
 function isContractReviewTable(columns: string[]): boolean {
   return columns.some((c) => c === "审核规则名称" || isAuditResultColumn(c) || isRawComparisonColumn(c));
 }
@@ -57,10 +78,9 @@ export function DocSectionTable({
           <table className="doc-section-table">
             {productLayout && (
               <colgroup>
-                <col className="col-name" />
-                <col className="col-qty" />
-                <col className="col-price" />
-                <col className="col-amount" />
+                {cols.map((col) => (
+                  <col key={col} className={productColClass(col)} />
+                ))}
               </colgroup>
             )}
             <thead>
