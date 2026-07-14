@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AudioRecorderHandle, RecorderStatus } from "../types/voice";
+import { computeRmsLevel } from "../utils/audioLevel";
 
 const STOP_WAIT_MS = 4500;
 
@@ -8,6 +9,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
   const [partialText, setPartialText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState(0);
+  const [level, setLevel] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<ScriptProcessorNode | null>(null);
@@ -15,6 +17,8 @@ export function useAudioRecorder(): AudioRecorderHandle {
   const finalRef = useRef("");
   const partialRef = useRef("");
   const rafRef = useRef(0);
+  const levelRef = useRef(0);
+  const levelRafRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statusRef = useRef<RecorderStatus>("idle");
   const stopResolveRef = useRef<((text: string) => void) | null>(null);
@@ -27,6 +31,20 @@ export function useAudioRecorder(): AudioRecorderHandle {
     rafRef.current = requestAnimationFrame(() => {
       setPartialText(partialRef.current);
     });
+  }
+
+  function flushLevel() {
+    cancelAnimationFrame(levelRafRef.current);
+    levelRafRef.current = requestAnimationFrame(() => {
+      setLevel(levelRef.current);
+    });
+  }
+
+  function resetLevel() {
+    cancelAnimationFrame(levelRafRef.current);
+    levelRafRef.current = 0;
+    levelRef.current = 0;
+    setLevel(0);
   }
 
   function resolveStop() {
@@ -61,6 +79,10 @@ export function useAudioRecorder(): AudioRecorderHandle {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    cancelAnimationFrame(levelRafRef.current);
+    levelRafRef.current = 0;
+    levelRef.current = 0;
+    setLevel(0);
   }, []);
 
   const start = useCallback(async () => {
@@ -69,6 +91,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
     setStatus("requesting");
     statusRef.current = "requesting";
     setDurationSec(0);
+    resetLevel();
     timerRef.current = setInterval(() => {
       setDurationSec((s) => s + 1);
     }, 1000);
@@ -133,11 +156,14 @@ export function useAudioRecorder(): AudioRecorderHandle {
         const input = e.inputBuffer.getChannelData(0);
         const pcm = new Int16Array(input.length);
         for (let i = 0; i < input.length; i++) {
-          pcm[i] = Math.max(-32768, Math.min(32767, input[i] * 32767));
+          pcm[i] = Math.max(-32768, Math.min(32767, input[i]! * 32767));
         }
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(pcm.buffer);
         }
+        // 同一段 PCM 循环内顺便算能量，不改变推流逻辑
+        levelRef.current = computeRmsLevel(input);
+        flushLevel();
       };
     } catch (err) {
       const msg =
@@ -147,6 +173,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
       setError(msg);
       setStatus("error");
       statusRef.current = "error";
+      resetLevel();
     }
   }, [status, cleanup]);
 
@@ -197,9 +224,10 @@ export function useAudioRecorder(): AudioRecorderHandle {
     setError(null);
     setStatus("idle");
     statusRef.current = "idle";
+    resetLevel();
   }, []);
 
   useEffect(() => () => { cleanup(); }, [cleanup]);
 
-  return { status, isSupported, partialText, error, durationSec, start, stop, cancel, dismissError };
+  return { status, isSupported, partialText, error, durationSec, level, start, stop, cancel, dismissError };
 }
