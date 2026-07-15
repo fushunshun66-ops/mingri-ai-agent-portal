@@ -52,6 +52,89 @@ export function parseFirstJsonValue(text) {
   return undefined;
 }
 
+/**
+ * 安全地将 Python dict/list literal 字符串转换为 JSON 字符串（不使用 eval）。
+ * 策略：逐字符状态机，处理单引号字符串 → 双引号，Python 关键字替换。
+ */
+function convertPythonToJsonStr(s) {
+  let result = "";
+  let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === "'") {
+      // 单引号字符串 → 双引号字符串
+      result += '"';
+      i++;
+      while (i < s.length) {
+        const sc = s[i];
+        if (sc === "\\") {
+          const next = s[i + 1];
+          if (next === "'") {
+            // Python \' 转义 → JSON 中直接输出单引号（不需转义）
+            result += "'";
+            i += 2;
+          } else {
+            result += "\\" + (next || "");
+            i += 2;
+          }
+        } else if (sc === '"') {
+          // 单引号字符串内的裸双引号 → JSON 中必须转义
+          result += '\\"';
+          i++;
+        } else if (sc === "'") {
+          // 单引号字符串结束
+          result += '"';
+          i++;
+          break;
+        } else {
+          result += sc;
+          i++;
+        }
+      }
+    } else if (ch === '"') {
+      // 双引号字符串（直接透传）
+      result += '"';
+      i++;
+      while (i < s.length) {
+        const sc = s[i];
+        if (sc === "\\") {
+          result += "\\" + (s[i + 1] || "");
+          i += 2;
+        } else if (sc === '"') {
+          result += '"';
+          i++;
+          break;
+        } else {
+          result += sc;
+          i++;
+        }
+      }
+    } else {
+      // 非字符串区域：替换 Python 关键字
+      const rest = s.slice(i);
+      if (/^None(?![a-zA-Z0-9_])/.test(rest)) { result += "null";  i += 4; }
+      else if (/^True(?![a-zA-Z0-9_])/.test(rest)) { result += "true";  i += 4; }
+      else if (/^False(?![a-zA-Z0-9_])/.test(rest)) { result += "false"; i += 5; }
+      else { result += ch; i++; }
+    }
+  }
+  return result;
+}
+
+/** 尝试将 Python dict/list literal 字符串解析为 JS 值（禁止 eval） */
+function tryParsePythonLiteral(text) {
+  const s = String(text || "").trim();
+  if (!s.startsWith("{") && !s.startsWith("[")) return undefined;
+  // 快速排除：已经是合法 JSON（不含单引号作为字符串定界符）
+  // 若无单引号则跳过（交给已有逻辑处理）
+  if (!s.includes("'")) return undefined;
+  try {
+    const jsonStr = convertPythonToJsonStr(s);
+    return JSON.parse(jsonStr);
+  } catch {
+    return undefined;
+  }
+}
 function tryParseStrict(text) {
   const trimmed = String(text || "").trim();
   if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return undefined;
@@ -87,6 +170,7 @@ export function parseLooseJson(text) {
   const unfenced = stripMarkdownCodeFence(text);
   return (
     tryParseStrict(unfenced) ??
+    tryParsePythonLiteral(unfenced) ??
     tryParseFromFirstBrace(unfenced) ??
     parseFirstJsonValue(unfenced)
   );

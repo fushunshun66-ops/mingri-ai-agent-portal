@@ -312,7 +312,32 @@ function tryChoiceBlocksFromObject(value) {
   return result;
 }
 
-function processStructuredValue(value, itemName, blocks) {
+/** 字符串 → narrative/flow choice blocks（与 outputItemToBlocks 字符串分支对齐） */
+function tryAppendChoiceBlocksFromText(text, flowKey, blocks) {
+  const narrativeText = tryChoiceBlocksFromNarrativeText(text);
+  if (narrativeText) {
+    blocks.push(...narrativeText);
+    return true;
+  }
+
+  const choiceParsed = tryChoiceBlocksFromText(text, flowKey);
+  if (choiceParsed) {
+    if (choiceParsed.intro) {
+      const intro = choiceParsed.intro.replace(/[：:]\s*$/u, "").trim();
+      if (intro) blocks.push({ type: "markdown", content: intro });
+    }
+    for (const block of choiceParsed.blocks) {
+      blocks.push(block);
+    }
+    if (choiceParsed.footer) {
+      blocks.push({ type: "markdown", content: choiceParsed.footer });
+    }
+    return true;
+  }
+  return false;
+}
+
+function processStructuredValue(value, itemName, blocks, flowKey) {
   value = unwrapDocArray(value);
 
   const kvObj = kvRowsToObject(value);
@@ -361,10 +386,23 @@ function processStructuredValue(value, itemName, blocks) {
       return true;
     }
 
-    // 单字段字符串对象（如 { content: "消息文本" }）→ 直接渲染为 markdown，避免泄露 wrapper 键名
+    // 单字段字符串对象：先 parseLooseJson 递归；再尝试 choice；最后才 markdown
     const objKeys = Object.keys(value);
     if (objKeys.length === 1 && typeof value[objKeys[0]] === "string") {
-      blocks.push({ type: "markdown", content: value[objKeys[0]] });
+      const inner = value[objKeys[0]];
+      const parsed = parseLooseJson(inner);
+      if (
+        parsed !== undefined &&
+        parsed !== null &&
+        typeof parsed === "object" &&
+        processStructuredValue(parsed, itemName, blocks, flowKey)
+      ) {
+        return true;
+      }
+      if (tryAppendChoiceBlocksFromText(inner, flowKey, blocks)) {
+        return true;
+      }
+      blocks.push({ type: "markdown", content: inner });
       return true;
     }
 
@@ -395,7 +433,7 @@ function outputItemToBlocks(item, flowKey) {
     return blocks;
   }
 
-  if (processStructuredValue(value, item.name, blocks)) {
+  if (processStructuredValue(value, item.name, blocks, flowKey)) {
     return blocks;
   }
 
@@ -406,7 +444,7 @@ function outputItemToBlocks(item, flowKey) {
 
     const parsed = tryParseJson(visible);
     if (parsed !== undefined) {
-      if (processStructuredValue(parsed, item.name, blocks)) {
+      if (processStructuredValue(parsed, item.name, blocks, flowKey)) {
         return blocks;
       }
     }
@@ -417,24 +455,7 @@ function outputItemToBlocks(item, flowKey) {
       return blocks;
     }
 
-    const narrativeText = tryChoiceBlocksFromNarrativeText(visible);
-    if (narrativeText) {
-      blocks.push(...narrativeText);
-      return blocks;
-    }
-
-    const choiceParsed = tryChoiceBlocksFromText(visible, flowKey);
-    if (choiceParsed) {
-      if (choiceParsed.intro) {
-        const intro = choiceParsed.intro.replace(/[：:]\s*$/u, "").trim();
-        if (intro) blocks.push({ type: "markdown", content: intro });
-      }
-      for (const block of choiceParsed.blocks) {
-        blocks.push(block);
-      }
-      if (choiceParsed.footer) {
-        blocks.push({ type: "markdown", content: choiceParsed.footer });
-      }
+    if (tryAppendChoiceBlocksFromText(visible, flowKey, blocks)) {
       return blocks;
     }
 

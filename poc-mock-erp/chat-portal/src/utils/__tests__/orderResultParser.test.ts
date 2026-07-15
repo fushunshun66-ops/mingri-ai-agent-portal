@@ -38,8 +38,14 @@ describe("tryOrderResultFromObject (chat-portal)", () => {
     });
     expect(result).not.toBeNull();
     expect(result!.fieldGroups?.length).toBeGreaterThan(0);
+    // 金额汇总含税金额按元：3425000 → "3,425,000.00"（不是 "34,250.00"）
+    const summaryTax = result!.fieldGroups?.flatMap((g) => g.fields).find((f) => f.key === "taxAmount");
+    expect(summaryTax?.value).toBe("3,425,000.00");
     expect(result!.warnings?.[0]?.message).toBe("E签宝报错");
     expect(result!.sections?.[0]?.rows?.length).toBe(1);
+    // 明细表格按元：taxPrice:100 → "100.00"（不是 "1.00"）
+    expect(result!.sections?.[0]?.rows?.[0]?.["含税单价"]).toBe("100.00");
+    expect(result!.sections?.[0]?.rows?.[0]?.["含税金额"]).toBe("100.00");
   });
 
   it("extras use Chinese labels and formatted values", () => {

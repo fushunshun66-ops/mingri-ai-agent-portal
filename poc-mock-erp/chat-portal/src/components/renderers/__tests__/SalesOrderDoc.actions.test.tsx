@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+﻿import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SalesOrderDoc } from "../SalesOrderDoc";
 import { buildDocActionSlotKey } from "../../../utils/docAction";
@@ -14,10 +14,10 @@ function action(id: string, label: string): FormAction {
 }
 
 describe("SalesOrderDoc actions", () => {
-  it("点击「确认无误」透传 sendImmediately: true，不因 filled 禁用修改按钮", () => {
+  it("点击「提交订单」透传 sendImmediately: true，不因 filled 禁用修改按钮", () => {
     const onAction = vi.fn();
     const actions = [
-      action("confirm", "确认无误"),
+      action("confirm", "提交订单"),
       action("modify_qty", "修改数量"),
       action("modify_date", "修改交期"),
     ];
@@ -33,11 +33,11 @@ describe("SalesOrderDoc actions", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /确认无误/ }));
+    fireEvent.click(screen.getByRole("button", { name: /提交订单/ }));
 
     expect(onAction).toHaveBeenCalledTimes(1);
     const ctx = onAction.mock.calls[0][1] as ChoiceSelectContext;
-    expect(onAction.mock.calls[0][0]).toBe("确认无误");
+    expect(onAction.mock.calls[0][0]).toBe("提交订单");
     expect(ctx.sendImmediately).toBe(true);
     expect(ctx.optionId).toBe("confirm");
 
@@ -48,7 +48,7 @@ describe("SalesOrderDoc actions", () => {
   it("临时禁用修改按钮时点击「修改数量」不触发 onAction", () => {
     const onAction = vi.fn();
     const actions = [
-      action("confirm", "确认无误"),
+      action("confirm", "提交订单"),
       action("modify_qty", "修改数量"),
     ];
 
@@ -69,7 +69,7 @@ describe("SalesOrderDoc actions", () => {
   it.skip("点击「修改数量」不带 sendImmediately，仅走填芯片上下文", () => {
     const onAction = vi.fn();
     const actions = [
-      action("confirm", "确认无误"),
+      action("confirm", "提交订单"),
       action("modify_qty", "修改数量"),
     ];
 
@@ -102,7 +102,7 @@ describe("SalesOrderDoc actions", () => {
         blockIndex={0}
         fields={BASE_FIELDS}
         actions={[
-          action("confirm", "确认无误"),
+          action("confirm", "提交订单"),
           action("modify_qty", "修改数量"),
         ]}
         selectedBySlot={{ [confirmSlot]: "confirm" }}
@@ -112,10 +112,10 @@ describe("SalesOrderDoc actions", () => {
 
     expect(screen.getByText("已提交")).toBeInTheDocument();
     expect(screen.queryByText(/已填入输入框/)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /确认无误/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /提交订单/ })).toBeDisabled();
     expect(screen.getByRole("button", { name: /修改数量/ })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole("button", { name: /确认无误/ }));
+    fireEvent.click(screen.getByRole("button", { name: /提交订单/ }));
     expect(onAction).not.toHaveBeenCalled();
   });
 
@@ -126,7 +126,7 @@ describe("SalesOrderDoc actions", () => {
         blockIndex={0}
         fields={BASE_FIELDS}
         actions={[
-          action("confirm", "确认无误"),
+          action("confirm", "提交订单"),
           action("modify_qty", "修改数量"),
         ]}
       />,
@@ -145,7 +145,7 @@ describe("SalesOrderDoc actions", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /确认提交/ }));
+    fireEvent.click(screen.getByRole("button", { name: /提交订单/ }));
     expect(onAction.mock.calls[0][1].sendImmediately).toBe(true);
   });
 
@@ -156,7 +156,7 @@ describe("SalesOrderDoc actions", () => {
         blockIndex={0}
         fields={BASE_FIELDS}
         actions={[
-          action("confirm", "确认无误"),
+          action("confirm", "提交订单"),
           action("modify_qty", "修改数量"),
           action("modify_date", "修改交期"),
         ]}
@@ -175,21 +175,21 @@ describe("SalesOrderDoc actions", () => {
     }
   });
 
-  it("sending 时修改按钮禁用，确认无误同样禁用", () => {
+  it("sending 时修改按钮禁用，提交订单同样禁用", () => {
     render(
       <SalesOrderDoc
         messageId="m1"
         blockIndex={0}
         fields={BASE_FIELDS}
         actions={[
-          action("confirm", "确认无误"),
+          action("confirm", "提交订单"),
           action("modify_qty", "修改数量"),
         ]}
         disabled
       />,
     );
 
-    expect(screen.getByRole("button", { name: /确认无误/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /提交订单/ })).toBeDisabled();
     expect(screen.getByRole("button", { name: /修改数量/ })).toBeDisabled();
   });
 });

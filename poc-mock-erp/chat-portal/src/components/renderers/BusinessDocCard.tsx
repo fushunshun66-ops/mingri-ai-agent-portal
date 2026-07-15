@@ -126,7 +126,7 @@ export function BusinessDocCard({
         }
         actions={
           <DocActionButton
-            label="确认提交"
+            label="提交订单"
             primary
             filled={selectedBySlot?.[buildDocActionSlotKey(messageId, blockIndex, "confirm")] === "confirm"}
             disabled={
@@ -139,7 +139,7 @@ export function BusinessDocCard({
                 blockIndex,
                 actionId: "confirm",
                 fieldLabel: displayTitle,
-                buttonLabel: "确认提交",
+                buttonLabel: "提交订单",
                 sendImmediately: true,
               })
             }

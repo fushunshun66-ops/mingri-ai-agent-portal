@@ -13,7 +13,7 @@ import {
 } from "../../utils/docAction";
 import type { FormAction, FormField } from "../../types/message";
 
-const CONFIRM_LABEL = "确认提交";
+const CONFIRM_LABEL = "提交订单";
 
 function docFootHint(opts: {
   confirmFilled: boolean;

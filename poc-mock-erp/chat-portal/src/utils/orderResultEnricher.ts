@@ -65,16 +65,10 @@ export function extractOrderPayload(value: unknown): Record<string, unknown> {
   return obj;
 }
 
-function looksLikeYuanAmount(num: number) {
-  if (!Number.isFinite(num)) return false;
-  if (String(num).includes(".")) return true;
-  return Math.abs(num) > 0 && Math.abs(num) < 100;
-}
-
-function formatCurrency(num: number) {
+/** 金额按「元」展示（接口单位已是元，禁止 ÷100） */
+function formatYuanCurrency(num: number) {
   if (!Number.isFinite(num)) return String(num ?? "");
-  const yuan = looksLikeYuanAmount(num) ? num : num / 100;
-  return yuan.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return num.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatNumber(num: number) {
@@ -96,7 +90,7 @@ function formatFieldValue(rawValue: unknown, widget?: string) {
     return VERIFY_STATE_MAP[key] ?? VERIFY_STATE_MAP[Number(key)] ?? String(rawValue);
   }
   if (widget === "date") return formatDateValue(rawValue);
-  if (widget === "currency") return formatCurrency(Number(rawValue));
+  if (widget === "currency") return formatYuanCurrency(Number(rawValue));
   if (widget === "number") return formatNumber(Number(rawValue));
   return String(rawValue);
 }
@@ -148,7 +142,7 @@ function buildSections(payload: Record<string, unknown>, profile: (typeof profil
         if (!(srcKey in item)) continue;
         const raw = item[srcKey];
         if (!isScalar(raw)) continue;
-        if (currencyCols.has(label)) mapped[label] = formatCurrency(Number(raw));
+        if (currencyCols.has(label)) mapped[label] = formatYuanCurrency(Number(raw));
         else if (label === "数量") mapped[label] = formatNumber(Number(raw));
         else mapped[label] = String(raw);
       }

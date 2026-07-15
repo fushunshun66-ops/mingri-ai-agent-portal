@@ -60,6 +60,9 @@ describe("tryOrderResultFromObject", () => {
     expect(result.fieldGroups?.length).toBeGreaterThan(0);
     expect(result.warnings?.[0]?.message).toBe("E签宝报错");
     expect(result.sections?.[0]?.rows?.length).toBe(1);
+    // 明细表格按元：taxPrice:100 → "100.00"（不是 "1.00"）
+    expect(result.sections?.[0]?.rows?.[0]?.["含税单价"]).toBe("100.00");
+    expect(result.sections?.[0]?.rows?.[0]?.["含税金额"]).toBe("100.00");
   });
 
   it("提取发货单号 SD + orderCode", () => {

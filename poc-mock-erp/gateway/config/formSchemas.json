@@ -87,7 +87,7 @@
     "actions": [
       {
         "id": "confirm",
-        "label": "确认无误",
+        "label": "提交订单",
         "message": "确认无误，请提交订单"
       },
       {
@@ -95,6 +95,7 @@
         "label": "修改数量",
         "message": "我想修改数量"
       },
+
       {
         "id": "edit_date",
         "label": "修改交期",
@@ -113,7 +114,16 @@
       "仓库属地",
       "发货数量",
       "order_info",
-      "items"
+      "items",
+      "OrderNumber",
+      "CustomerCode",
+      "ReceivingUnitName",
+      "Material",
+      "WarehouseLocation",
+      "ShippingQuantity",
+      "Items",
+      "ReceivingUnitAddress",
+      "ShippingMethod"
     ],
     "deepMatch": true,
     "fieldOrder": [
@@ -127,17 +137,47 @@
       "收货人",
       "电话",
       "运输方式",
-      "物流_快递"
+      "物流_快递",
+      "OrderNumber",
+      "OrderDate",
+      "CustomerCode",
+      "ReceivingUnitName",
+      "ReceivingUnitAddress",
+      "TotalAmount",
+      "Salesperson",
+      "Receiver",
+      "Phone",
+      "ShippingMethod",
+      "LogisticsExpress",
+      "PostalCode",
+      "Fax",
+      "DestinationProvinceStation"
     ],
     "labels": {
       "单号": "发货单号",
       "收货单位名称": "收货单位",
-      "收货单位详细地址": "收货地址"
+      "收货单位详细地址": "收货地址",
+      "OrderNumber": "发货单号",
+      "OrderDate": "日期",
+      "CustomerCode": "客户编号",
+      "Salesperson": "业务员",
+      "Receiver": "收货人",
+      "PostalCode": "邮编",
+      "ReceivingUnitName": "收货单位",
+      "Fax": "传真",
+      "ReceivingUnitAddress": "收货地址",
+      "Phone": "电话",
+      "DestinationProvinceStation": "目的地省站",
+      "ShippingMethod": "运输方式",
+      "TotalAmount": "总金额",
+      "LogisticsExpress": "物流快递"
     },
     "widgets": {
       "日期": "date",
       "要求到货时间": "date",
-      "总金额": "currency"
+      "总金额": "currency",
+      "OrderDate": "date",
+      "TotalAmount": "currency"
     },
     "unwrapPaths": [
       "order_info",
@@ -148,6 +188,7 @@
       {
         "keys": [
           "items",
+          "Items",
           "发货明细",
           "明细",
           "var_shipment"
@@ -161,7 +202,16 @@
           "要求到货时间",
           "收货地址",
           "备注"
-        ]
+        ],
+        "fieldMap": {
+          "Material": "物料",
+          "WarehouseLocation": "仓库属地",
+          "ShippingQuantity": "发货数量",
+          "UnitPrice": "单价",
+          "RequiredDeliveryDate": "要求到货时间",
+          "DeliveryAddress": "收货地址",
+          "Remarks": "备注"
+        }
       }
     ],
     "actions": [
