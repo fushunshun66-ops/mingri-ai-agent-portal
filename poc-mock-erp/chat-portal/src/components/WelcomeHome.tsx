@@ -8,7 +8,7 @@ export function WelcomeHome({
   onSelectFlow,
 }: {
   flows: Flow[];
-  onPickExample: (text: string) => void;
+  onPickExample: (text: string, flowKey: string) => void;
   onSelectFlow: (flowKey: string) => void;
 }) {
   const prompts = flows.flatMap((f) =>
@@ -94,10 +94,7 @@ export function WelcomeHome({
                   key={`${p.flowKey}-${p.text}`}
                   type="button"
                   className="example-item"
-                  onClick={() => {
-                    onSelectFlow(p.flowKey);
-                    onPickExample(p.text);
-                  }}
+                  onClick={() => onPickExample(p.text, p.flowKey)}
                 >
                   <span className={`example-item-tag tag-${p.flowKey}`}>{p.flowName}</span>
                   <span className="example-item-text">{p.text}</span>

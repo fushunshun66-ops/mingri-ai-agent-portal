@@ -97,7 +97,7 @@ export function Composer({
   };
 
   const canSend = hasComposerPayload(value, chips, attachments.length > 0 || localFiles.length > 0);
-  const isRecording = voiceRecorder?.status === "recording";
+  const isRecording = voiceRecorder?.status === "recording" || voiceRecorder?.status === "stopping";
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -309,16 +309,20 @@ export function Composer({
                 size="sm"
                 className={`tool-btn ${isRecording ? "tool-btn-recording" : ""}`}
                 title={
-                  isRecording
+                  voiceRecorder.status === "stopping"
+                    ? "识别中…"
+                    : isRecording
                     ? `结束录音 · ${voiceRecorder.durationSec}s`
                     : "语音输入"
                 }
                 aria-label={
-                  isRecording
+                  voiceRecorder.status === "stopping"
+                    ? "识别中…"
+                    : isRecording
                     ? `结束录音 · ${voiceRecorder.durationSec}s`
                     : "语音输入"
                 }
-                disabled={voiceRecorder.status === "requesting" || voiceRecorder.status === "error" || sending || uploading}
+                disabled={voiceRecorder.status === "requesting" || voiceRecorder.status === "stopping" || voiceRecorder.status === "error" || sending || uploading}
                 onClick={async () => {
                   try {
                     if (voiceRecorder.status === "recording") {
@@ -339,7 +343,7 @@ export function Composer({
                 }}
               >
                 <IconWaveform live={isRecording} level={voiceRecorder.level ?? 0} />
-                {isRecording ? <span>结束</span> : null}
+                {voiceRecorder?.status === "stopping" ? <span>识别中…</span> : isRecording ? <span>结束</span> : null}
               </Button>
             )}
             {canAttach && (
@@ -382,3 +386,4 @@ export function Composer({
     </div>
   );
 }
+

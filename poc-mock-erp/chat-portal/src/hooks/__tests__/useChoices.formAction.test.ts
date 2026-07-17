@@ -107,13 +107,15 @@ describe("useChoices handleFormAction sendImmediately", () => {
     expect(result.current.selectedChoiceBySlot[slotKey]).toBe("modify_qty");
   });
 
-  it("handleChoiceSelect ignores sendImmediately (choice cards stay chip-only)", () => {
+  it("选择卡路由走 handleFormAction + sendImmediately:true 时直发、不填芯片", () => {
+    // ChoiceConfirmCard 现在 onClick 携带 sendImmediately:true，
+    // App.tsx 将 onChoiceSelect 指向 handleFormAction，故选择卡点击直发。
     const sendImmediately = vi.fn();
     const { result } = renderHook(() => useChoices());
     result.current.sendImmediatelyRef.current = sendImmediately;
 
     act(() => {
-      result.current.handleChoiceSelect("选项A", {
+      result.current.handleFormAction("选项A", {
         slotKey: "slot-a",
         optionId: "a",
         fieldLabel: "请选择",
@@ -122,7 +124,8 @@ describe("useChoices handleFormAction sendImmediately", () => {
       });
     });
 
-    expect(sendImmediately).not.toHaveBeenCalled();
-    expect(result.current.choiceComposerChips["slot-a"]?.displayLabel).toBe("选项A");
+    expect(sendImmediately).toHaveBeenCalledWith("选项A");
+    expect(result.current.choiceComposerChips["slot-a"]).toBeUndefined();
+    expect(result.current.selectedChoiceBySlot["slot-a"]).toBe("a");
   });
 });

@@ -77,6 +77,7 @@ export function ChoiceConfirmCard({
                     optionId: opt.id,
                     fieldLabel: label,
                     displayLabel: opt.label,
+                    sendImmediately: true,
                   })
                 }
               >

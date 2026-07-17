@@ -56,7 +56,7 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
   );
 
   const handleSend = useCallback(
-    async (overrideContent?: string) => {
+    async (overrideContent?: string, preferredFlowKeyOverride?: string | null) => {
       const deps = depsRef.current;
 
       const chipList = Object.values(deps.choiceComposerChips);
@@ -65,8 +65,10 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
           ? overrideContent.trim()
           : composeChoiceComposerContent(deps.input, chipList);
 
-      let preferredFlowKey = deps.draftFlowKey;
-      if (!deps.activeId && !deps.draftFlowKey) {
+      // null/undefined 均回退 draft；显式传入非空 flowKey 时不再被 @提及覆盖
+      let preferredFlowKey =
+        preferredFlowKeyOverride != null ? preferredFlowKeyOverride : deps.draftFlowKey;
+      if (preferredFlowKeyOverride == null && !deps.activeId && !deps.draftFlowKey) {
         const parsedMention = parseAgentMentionFromContent(content, deps.flows);
         if (parsedMention.flowKey) {
           preferredFlowKey = parsedMention.flowKey;

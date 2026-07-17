@@ -113,7 +113,14 @@ export default function App() {
           <div className={`chat-main ${chat.isHome ? "chat-main-home" : ""}`}>
             {chat.isHome ? (
               <>
-                <WelcomeHome flows={chat.flows} onPickExample={chat.setInput} onSelectFlow={chat.handleNewSession} />
+                <WelcomeHome
+                flows={chat.flows}
+                onSelectFlow={chat.handleNewSession}
+                onPickExample={(text, flowKey) => {
+                  chat.handleNewSession(flowKey);
+                  void chat.handleSend(text, flowKey);
+                }}
+              />
                 {composer}
               </>
             ) : chat.activeSession || chat.inDraft ? (
@@ -131,7 +138,7 @@ export default function App() {
                     durationByMsg={chat.durationByMsg}
                     flowKey={chat.activeFlow?.flowKey}
                     onFormAction={chat.handleFormAction}
-                    onChoiceSelect={chat.handleChoiceSelect}
+                    onChoiceSelect={chat.handleFormAction}
                     selectedChoiceBySlot={chat.selectedChoiceBySlot}
                   />
                 )}

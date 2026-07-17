@@ -95,7 +95,8 @@ export function useAudioRecorder(engine: AsrEngine = "funasr"): AudioRecorderHan
   }, []);
 
   const start = useCallback(async () => {
-    if (status !== "idle") return;
+    // 用 statusRef 防重入，避免快速双击泄漏 MediaStream / WebSocket
+    if (statusRef.current !== "idle") return;
     setError(null);
     setStatus("requesting");
     statusRef.current = "requesting";
@@ -206,10 +207,17 @@ export function useAudioRecorder(engine: AsrEngine = "funasr"): AudioRecorderHan
       setStatus("error");
       statusRef.current = "error";
     }
-  }, [status, cleanup]);
+  }, [cleanup, engine]);
 
   const stop = useCallback(async () => {
-    if (status !== "recording") return finalRef.current || partialRef.current;
+    // 重入保护：stopping 期间直接返回当前文字，不覆盖正在等待的 Promise
+    if (statusRef.current === "stopping") return finalRef.current || partialRef.current;
+    // 非 recording 状态无需处理
+    if (statusRef.current !== "recording") return finalRef.current || partialRef.current;
+
+    // 立即切换为 stopping，阻止再次进入并更新 UI
+    statusRef.current = "stopping";
+    setStatus("stopping");
 
     const spoken = await new Promise<string>((resolve) => {
       stopResolveRef.current = resolve;
@@ -233,7 +241,7 @@ export function useAudioRecorder(engine: AsrEngine = "funasr"): AudioRecorderHan
     setPartialText("");
     partialRef.current = "";
     return spoken;
-  }, [status, cleanup]);
+  }, [cleanup]);
 
   const cancel = useCallback(() => {
     if (stopTimerRef.current) {
