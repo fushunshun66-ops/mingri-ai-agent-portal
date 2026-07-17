@@ -216,7 +216,32 @@
 .doc-review-summary-fail .doc-review-summary-value {
   color: #cf1322;
 }
-/* doc-audit-result 已替换为 shadcn Badge 组件 */
+.doc-audit-result {
+  display: inline-block;
+  max-width: 100%;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.45;
+  white-space: normal;
+  word-break: break-word;
+}
+.doc-audit-result--pass {
+  color: #389e0d;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+}
+.doc-audit-result--fail {
+  color: #cf1322;
+  background: #fff1f0;
+  border: 1px solid #ffa39e;
+}
+.doc-audit-result--neutral {
+  color: var(--text);
+  background: #f5f5f5;
+  border: 1px solid var(--line);
+}
 
 .doc-raw-compare {
   display: flex;
@@ -241,10 +266,14 @@
   word-break: break-word;
   line-height: 1.45;
 }
+.doc-section--audit .doc-section-table td {
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: top;
+}
 .doc-section--audit .doc-section-table td.doc-audit-cell {
   vertical-align: top;
 }
-/* .doc-audit-result 已替换为 Badge */
 .doc-section--audit .doc-section-table td.doc-raw-cell {
   vertical-align: top;
 }

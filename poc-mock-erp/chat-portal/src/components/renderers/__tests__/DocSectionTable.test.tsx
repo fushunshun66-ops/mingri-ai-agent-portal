@@ -78,3 +78,31 @@ describe("DocSectionTable product colgroup", () => {
     expect(container.querySelector("colgroup")).toBeNull();
   });
 });
+
+describe("DocSectionTable contract audit result", () => {
+  it("renders long audit result text with wrap-friendly styling", () => {
+    const longText =
+      "不通过：甲方合同盖章主体为 '明日控股集团' 与系统客户主体不一致，请核对合同签署方";
+    const { getByText, container } = render(
+      <DocSectionTable
+        title="审核内容"
+        highlightAuditResult
+        columns={["审核规则名称", "审核规则说明", "原始数据比对", "审核结果"]}
+        rows={[
+          {
+            审核规则名称: "盖章合规性",
+            审核规则说明: "合同公章主体需与客户一致",
+            原始数据比对: "合同: 明日控股 / 系统: 其他",
+            审核结果: longText,
+          },
+        ]}
+      />,
+    );
+
+    const auditEl = getByText(longText);
+    expect(auditEl.tagName).toBe("SPAN");
+    expect(auditEl).toHaveClass("doc-audit-result");
+    expect(auditEl).toHaveClass("doc-audit-result--fail");
+    expect(container.querySelector(".doc-audit-cell")).not.toBeNull();
+  });
+});

@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { formatCellValue, isMoneyColumn } from "../../utils/fieldValue";
 import {
   formatAuditResult,
@@ -7,7 +6,6 @@ import {
   orderContractReviewColumns,
   parseRawComparisonData,
 } from "../../utils/contractReview";
-import { cn } from "@/lib/utils";
 
 function isProductTable(columns: string[]): boolean {
   return columns.includes("商品名称") && columns.includes("数量");
@@ -36,6 +34,11 @@ function productColClass(col: string): string {
 
 function isContractReviewTable(columns: string[]): boolean {
   return columns.some((c) => c === "审核规则名称" || isAuditResultColumn(c) || isRawComparisonColumn(c));
+}
+
+function AuditResultCell({ value }: { value: unknown }) {
+  const { text, tone } = formatAuditResult(value);
+  return <span className={`doc-audit-result doc-audit-result--${tone}`}>{text}</span>;
 }
 
 function RawComparisonCell({ value }: { value: unknown }) {
@@ -101,17 +104,7 @@ export function DocSectionTable({
                       className={`${isMoneyColumn(col) ? "doc-num" : ""}${auditHighlight && isAuditResultColumn(col) ? " doc-audit-cell" : ""}${isRawComparisonColumn(col) ? " doc-raw-cell" : ""}`}
                     >
                       {auditHighlight && isAuditResultColumn(col) ? (
-                        (() => {
-                          const { text, tone } = formatAuditResult(row[col]);
-                          return <Badge variant={tone === "fail" ? "destructive" : "outline"} className={cn(
-                            "text-xs font-semibold px-2 py-0.5 rounded",
-                            tone === "pass" && "bg-[#f6ffed] text-[#389e0d] border-[#b7eb8f]",
-                            tone === "fail" && "bg-[#fff0f0] text-[#ff4d4f] border-[#ffccc7]",
-                            tone === "neutral" && "bg-[#f5f5f5]"
-                          )}>
-                            {text}
-                          </Badge>;
-                        })()
+                        <AuditResultCell value={row[col]} />
                       ) : isRawComparisonColumn(col) ? (
                         <RawComparisonCell value={row[col]} />
                       ) : (

@@ -1,5 +1,7 @@
 export type RecorderStatus = "idle" | "requesting" | "recording" | "error";
 
+export type AsrEngine = "funasr" | "qwen";
+
 export interface AudioRecorderHandle {
   status: RecorderStatus;
   isSupported: boolean;

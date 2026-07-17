@@ -8,6 +8,9 @@ import { summarizeSessionTitle } from "./utils/sessionTitle.js";
 import { detectIntent, CONFIDENCE_THRESHOLD } from "./utils/intentRouter.js";
 import { WebSocketServer } from "ws";
 import { createAsrProxy } from "./asr-proxy.js";
+import { createQwenRealtimeProxy } from "./asr/qwenRealtimeProxy.js";
+import { dispatchAsrConnection } from "./asr/dispatchAsr.js";
+import { loadHotwords } from "./asrHotwords.js";
 
 setFormSchemas(config.formSchemas);
 
@@ -70,7 +73,7 @@ app.post("/api/sessions", async (req, res) => {
       userId: userId || "demo-user",
       flowKey,
       agentSn: flow.agentSn,
-      versionSn: flow.versionSn,
+      versionSn: flow.versionSn || flow.version,
       externalSessionSn,
     });
     ok(res, session, "会话创建成功");
@@ -327,4 +330,12 @@ const server = app.listen(config.port, () => {
 });
 
 const wss = new WebSocketServer({ server, path: "/api/asr/stream" });
-wss.on("connection", (ws) => createAsrProxy(ws, { wsUrl: "ws://127.0.0.1:10095" }));
+wss.on("connection", (ws, req) => {
+  dispatchAsrConnection(ws, req, {
+    asrConfig: config.asr,
+    funasrWsUrl: "ws://127.0.0.1:10095",
+    createAsrProxy,
+    createQwenRealtimeProxy,
+    loadHotwords,
+  });
+});

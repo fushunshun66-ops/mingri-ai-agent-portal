@@ -5,6 +5,7 @@ import type { ChatMessage, TraceStep, UploadedFile } from "../types/message";
 import type { ChoiceComposerChip } from "../types/choice";
 import type { Flow } from "../types/message";
 import { groupTraces, normalizeLiveTrace } from "../utils/chatUtils";
+import { toProcessDisplaySeconds } from "../utils/processDisplaySeconds";
 import { composeChoiceComposerContent, hasComposerPayload } from "../utils/choiceComposer";
 import { parseAgentMentionFromContent } from "../utils/agentMention";
 
@@ -124,7 +125,10 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
       const runStart = Date.now();
       setLiveSeconds(0);
       if (tickRef.current) clearInterval(tickRef.current);
-      tickRef.current = setInterval(() => setLiveSeconds(Math.round((Date.now() - runStart) / 1000)), 1000);
+      tickRef.current = setInterval(
+        () => setLiveSeconds(toProcessDisplaySeconds(Date.now() - runStart)),
+        1000,
+      );
       setMessages((prev) => [
         ...prev,
         {
@@ -161,7 +165,7 @@ export function useChat(depsRef: MutableRefObject<ChatCrossDeps>) {
         setError((e as Error).message);
       } finally {
         if (tickRef.current) clearInterval(tickRef.current);
-        const durationSec = Math.max(1, Math.round((Date.now() - runStart) / 1000));
+        const durationSec = toProcessDisplaySeconds(Date.now() - runStart, 1);
         const [msgs, traces] = await Promise.all([
           api.listMessages(sessionId!).catch(() => [] as ChatMessage[]),
           api.listTraces(sessionId!).catch(() => [] as TraceStep[]),

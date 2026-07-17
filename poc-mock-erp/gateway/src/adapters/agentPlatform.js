@@ -37,10 +37,11 @@ export class AgentPlatformAdapter {
     return flow;
   }
 
-  /** versionSn 留空时不传，中台默认使用智能体最新发布版本 */
+  /** versionSn 为平台版本编码；version 为展示版本号（如 V1.0.7），二选一传给中台 */
   _chatFlowPayload({ sessionSn, flow, stream, user }) {
     const payload = { sessionSn, stream, user };
     if (flow.versionSn) payload.versionSn = flow.versionSn;
+    else if (flow.version) payload.version = flow.version;
     return payload;
   }
 
@@ -73,14 +74,28 @@ export class AgentPlatformAdapter {
     }
   }
 
-  /** 创建中台会话，返回 sessionSn */
+    /** 创建中台会话，返回 sessionSn */
   async createSession(flowKey) {
     const flow = this.getFlow(flowKey);
     if (this.isMock()) return `session-mock-${Date.now()}`;
     const url = `${this.cfg.baseUrl}/open/v1/session/${flow.agentSn}`;
-    const json = await this._fetch(url, { method: "GET", headers: this._headers() });
-    // 文档示例为 data.sessionSn，实际返回 data 直接为 sessionSn 字符串，两者都兼容
-    return typeof json?.data === "string" ? json.data : json?.data?.sessionSn;
+    // #region agent log
+    fetch('http://127.0.0.1:7493/ingest/ee05bc6a-f864-47dd-9de1-06f2431ad9a6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac0dc2'},body:JSON.stringify({sessionId:'ac0dc2',runId:'pre-fix',hypothesisId:'A,D',location:'agentPlatform.js:createSession:before',message:'createSession request',data:{flowKey,agentSn:flow.agentSn,urlPath:`/open/v1/session/${flow.agentSn}`},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    try {
+      const json = await this._fetch(url, { method: "GET", headers: this._headers() });
+      // 文档示例为 data.sessionSn，实际返回 data 直接为 sessionSn 字符串，两者都兼容
+      const sessionSn = typeof json?.data === "string" ? json.data : json?.data?.sessionSn;
+      // #region agent log
+      fetch('http://127.0.0.1:7493/ingest/ee05bc6a-f864-47dd-9de1-06f2431ad9a6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac0dc2'},body:JSON.stringify({sessionId:'ac0dc2',runId:'pre-fix',hypothesisId:'A,D',location:'agentPlatform.js:createSession:after',message:'createSession ok',data:{flowKey,agentSn:flow.agentSn,sessionSnPrefix:String(sessionSn||'').slice(0,24),hasSessionSn:Boolean(sessionSn)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      return sessionSn;
+    } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7493/ingest/ee05bc6a-f864-47dd-9de1-06f2431ad9a6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac0dc2'},body:JSON.stringify({sessionId:'ac0dc2',runId:'pre-fix',hypothesisId:'A,D',location:'agentPlatform.js:createSession:error',message:'createSession failed',data:{flowKey,agentSn:flow.agentSn,error:String(err?.message||err).slice(0,300)},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      throw err;
+    }
   }
 
   /** 运行对话流（非流式），返回中台原始响应 body */
@@ -106,9 +121,12 @@ export class AgentPlatformAdapter {
     const flow = this.getFlow(flowKey);
     if (this.isMock()) return streamMockResponse(flowKey, query, sessionSn, onEvent);
 
-    const url = `${this.cfg.baseUrl}/open/v1/chatFlow/run/${flow.agentSn}`;
+        const url = `${this.cfg.baseUrl}/open/v1/chatFlow/run/${flow.agentSn}`;
     const user = { [flow.inputKey || "Query"]: query, ...extraInput };
     const payload = this._chatFlowPayload({ sessionSn, flow, stream: true, user });
+    // #region agent log
+    fetch('http://127.0.0.1:7493/ingest/ee05bc6a-f864-47dd-9de1-06f2431ad9a6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac0dc2'},body:JSON.stringify({sessionId:'ac0dc2',runId:'pre-fix',hypothesisId:'B,C,D',location:'agentPlatform.js:runChatFlowStream:before',message:'stream request payload shape',data:{flowKey,agentSn:flow.agentSn,inputKey:flow.inputKey||'Query',userKeys:Object.keys(user),hasVersionSn:Boolean(flow.versionSn),versionSn:flow.versionSn||null,stream:true,sessionSnPrefix:String(sessionSn||'').slice(0,24),queryLen:String(query||'').length,extraInputKeys:Object.keys(extraInput||{})},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.cfg.requestTimeoutMs);
@@ -121,8 +139,14 @@ export class AgentPlatformAdapter {
       });
       if (!res.ok || !res.body) {
         const text = await res.text().catch(() => "");
+        // #region agent log
+        fetch('http://127.0.0.1:7493/ingest/ee05bc6a-f864-47dd-9de1-06f2431ad9a6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac0dc2'},body:JSON.stringify({sessionId:'ac0dc2',runId:'pre-fix',hypothesisId:'A,B,C,E',location:'agentPlatform.js:runChatFlowStream:httpError',message:'stream HTTP error',data:{status:res.status,ok:res.ok,hasBody:Boolean(res.body),contentType:res.headers.get('content-type'),bodyPreview:String(text||'').slice(0,500),agentSn:flow.agentSn,inputKey:flow.inputKey||'Query',hasVersionSn:Boolean(flow.versionSn)},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         throw new Error(`中台流式调用失败 (HTTP ${res.status}): ${text.slice(0, 200)}`);
       }
+      // #region agent log
+      fetch('http://127.0.0.1:7493/ingest/ee05bc6a-f864-47dd-9de1-06f2431ad9a6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ac0dc2'},body:JSON.stringify({sessionId:'ac0dc2',runId:'pre-fix',hypothesisId:'A,E',location:'agentPlatform.js:runChatFlowStream:httpOk',message:'stream HTTP ok, reading SSE',data:{status:res.status,contentType:res.headers.get('content-type'),agentSn:flow.agentSn},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";

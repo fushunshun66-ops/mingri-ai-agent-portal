@@ -62,7 +62,11 @@ export function ProcessPanel({
         <span className="process-bar-text">{barText}</span>
         {streaming && last && stepName(last) && <span className="process-bar-node">· {stepName(last)}</span>}
         <span className="process-spacer" />
-        {durationText && <span className="process-duration">{durationText}</span>}
+        {durationText && (
+          <span key={seconds} className="process-duration">
+            {durationText}
+          </span>
+        )}
         <span className={`process-chevron ${open ? "up" : ""}`}>⌄</span>
       </button>
 

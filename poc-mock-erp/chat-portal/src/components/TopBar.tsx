@@ -1,5 +1,7 @@
 import { FLOW_META } from "./flowMeta";
 import { Badge } from "@/components/ui/badge";
+import { AsrSettingsSheet } from "./AsrSettingsSheet";
+import type { AsrEngine } from "../types/voice";
 
 function ModeBadge({ mode }: { mode?: string }) {
   if (!mode) return null;
@@ -34,6 +36,9 @@ export function TopBar({
   mode,
   onMenuToggle,
   isSidebarOpen,
+  asrEngine,
+  onAsrEngineChange,
+  recordingDisabled,
 }: {
   flowName?: string;
   flowKey?: string;
@@ -41,6 +46,9 @@ export function TopBar({
   mode?: string;
   onMenuToggle: () => void;
   isSidebarOpen?: boolean;
+  asrEngine: AsrEngine;
+  onAsrEngineChange: (engine: AsrEngine) => void;
+  recordingDisabled?: boolean;
 }) {
   const meta = flowKey ? FLOW_META[flowKey] : null;
   return (
@@ -93,6 +101,11 @@ export function TopBar({
           );
         })()}
         <ModeBadge mode={mode} />
+        <AsrSettingsSheet
+          engine={asrEngine}
+          onEngineChange={onAsrEngineChange}
+          recordingDisabled={recordingDisabled}
+        />
       </div>
     </header>
   );

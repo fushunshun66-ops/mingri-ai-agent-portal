@@ -1,16 +1,9 @@
 import { WebSocket } from "ws";
+import { loadHotwords, buildHandshakePayload } from "./asrHotwords.js";
+import { shouldFinishAfterStop } from "./asrStopPolicy.js";
 
 const SILENCE_FRAMES = 40;
 const SILENCE_BYTES = Buffer.alloc(3200, 0);
-const HANDSHAKE_MSG = JSON.stringify({
-  mode: "2pass",
-  chunk_size: [5, 10, 5],
-  chunk_interval: 10,
-  wav_name: "stream",
-  wav_format: "pcm",
-  is_speaking: true,
-  audio_fs: 16000,
-});
 const TIMEOUT_MS = 60000;
 const STOP_WAIT_MS = 4000;
 const SENSEVOICE_TAG_RE = /<\|[^|]+\|>/g;
@@ -21,6 +14,8 @@ export function createAsrProxy(clientWs, asrConfig) {
   let stopTimeout = null;
   let stopping = false;
   let closed = false;
+
+  const handshakeMsg = JSON.stringify(buildHandshakePayload(loadHotwords()));
 
   function cleanup() {
     if (closed) return;
@@ -64,7 +59,7 @@ export function createAsrProxy(clientWs, asrConfig) {
     asrWs = new WebSocket(asrConfig.wsUrl);
 
     asrWs.on("open", () => {
-      asrWs.send(HANDSHAKE_MSG);
+      asrWs.send(handshakeMsg);
       sendToClient({ type: "ready" });
     });
 
@@ -77,7 +72,7 @@ export function createAsrProxy(clientWs, asrConfig) {
         }
         console.log("[asr-proxy] fwd to client:", JSON.stringify({ text: msg.text?.slice(0, 50), is_final: msg.is_final, mode: msg.mode }));
         sendToClient(msg);
-        if (stopping && msg.text) {
+        if (stopping && shouldFinishAfterStop(msg)) {
           clearTimeout(stopTimeout);
           finishStop();
         }

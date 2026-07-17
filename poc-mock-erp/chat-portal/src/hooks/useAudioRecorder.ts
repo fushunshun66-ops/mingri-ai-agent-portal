@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AudioRecorderHandle, RecorderStatus } from "../types/voice";
+import type { AudioRecorderHandle, AsrEngine, RecorderStatus } from "../types/voice";
 import { computeRmsLevel } from "../utils/audioLevel";
+import { isAsrFinalResult } from "../utils/asrFinalResult";
+import { buildAsrWsUrl } from "../utils/asrEndpoint";
+import { TARGET_SAMPLE_RATE, toFunAsrPcm16 } from "../utils/resamplePcm";
 
 const STOP_WAIT_MS = 4500;
 
-export function useAudioRecorder(): AudioRecorderHandle {
+export function useAudioRecorder(engine: AsrEngine = "funasr"): AudioRecorderHandle {
   const [status, setStatus] = useState<RecorderStatus>("idle");
   const [partialText, setPartialText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -13,7 +16,9 @@ export function useAudioRecorder(): AudioRecorderHandle {
   const wsRef = useRef<WebSocket | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<ScriptProcessorNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const sampleRateRef = useRef(TARGET_SAMPLE_RATE);
   const finalRef = useRef("");
   const partialRef = useRef("");
   const rafRef = useRef(0);
@@ -63,6 +68,10 @@ export function useAudioRecorder(): AudioRecorderHandle {
       nodeRef.current.disconnect();
       nodeRef.current = null;
     }
+    if (gainRef.current) {
+      gainRef.current.disconnect();
+      gainRef.current = null;
+    }
     if (ctxRef.current) {
       ctxRef.current.close();
       ctxRef.current = null;
@@ -101,19 +110,33 @@ export function useAudioRecorder(): AudioRecorderHandle {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        audio: {
+          sampleRate: TARGET_SAMPLE_RATE,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
       });
       streamRef.current = stream;
 
-      const ctx = new AudioContext({ sampleRate: 16000 });
+      // 请求 16k；浏览器可能忽略并返回设备原生 rate（常见 48k）
+      const ctx = new AudioContext({ sampleRate: TARGET_SAMPLE_RATE });
       ctxRef.current = ctx;
+      sampleRateRef.current = ctx.sampleRate;
+
       const source = ctx.createMediaStreamSource(stream);
       const node = ctx.createScriptProcessor(4096, 1, 1);
       nodeRef.current = node;
-      source.connect(node);
-      node.connect(ctx.destination);
 
-      const ws = new WebSocket("ws://127.0.0.1:3001/api/asr/stream");
+      // 经 gain=0 接到 destination：onaudioprocess 仍触发，但无扬声器回放/回声
+      const silent = ctx.createGain();
+      silent.gain.value = 0;
+      gainRef.current = silent;
+      source.connect(node);
+      node.connect(silent);
+      silent.connect(ctx.destination);
+
+      const ws = new WebSocket(buildAsrWsUrl(engine));
       wsRef.current = ws;
       ws.binaryType = "arraybuffer";
 
@@ -140,7 +163,7 @@ export function useAudioRecorder(): AudioRecorderHandle {
           }
           if (msg.text) {
             partialRef.current = msg.text;
-            if (msg.is_final) finalRef.current = msg.text;
+            if (isAsrFinalResult(msg)) finalRef.current = msg.text;
             flushPartial();
           }
         } catch {
@@ -159,10 +182,8 @@ export function useAudioRecorder(): AudioRecorderHandle {
 
       node.onaudioprocess = (e) => {
         const input = e.inputBuffer.getChannelData(0);
-        const pcm = new Int16Array(input.length);
-        for (let i = 0; i < input.length; i++) {
-          pcm[i] = Math.max(-32768, Math.min(32767, input[i]! * 32767));
-        }
+        // 实际非 ~16k 时线性重采样后再推，禁止把 48k 当 16k 标称发送
+        const pcm = toFunAsrPcm16(input, sampleRateRef.current);
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(pcm.buffer);
         }

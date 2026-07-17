@@ -23,7 +23,15 @@
 .process-bar-text { font-weight: 600; flex: none; }
 .process-bar-node { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .process-spacer { flex: 1; }
-.process-duration { color: var(--muted); font-size: 12px; flex: none; }
+.process-duration {
+  color: var(--muted); font-size: 12px; flex: none;
+  transition: opacity .22s ease;
+  animation: processDurationFade .22s ease both;
+}
+@keyframes processDurationFade {
+  from { opacity: .45; }
+  to { opacity: 1; }
+}
 .process-chevron { color: var(--muted); transition: transform .18s ease; flex: none; }
 .process-chevron.up { transform: rotate(180deg); }
 

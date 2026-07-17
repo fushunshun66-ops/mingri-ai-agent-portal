@@ -36,15 +36,22 @@ function mockAudioGraph() {
       return audioProcess;
     },
   };
+  const silentGain = {
+    gain: { value: 1 },
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+  };
   const source = { connect: vi.fn() };
   const ctx = {
+    sampleRate: 16000,
     createMediaStreamSource: vi.fn(() => source),
     createScriptProcessor: vi.fn(() => node),
+    createGain: vi.fn(() => silentGain),
     destination: {},
     close: vi.fn(),
   };
 
-  return { stream, trackStop, node, ctx, getAudioProcess: () => audioProcess };
+  return { stream, trackStop, node, ctx, silentGain, getAudioProcess: () => audioProcess };
 }
 
 describe("useAudioRecorder level / cleanup 契约", () => {
@@ -65,13 +72,14 @@ describe("useAudioRecorder level / cleanup 契约", () => {
         return audio.ctx;
       }),
     );
-    vi.stubGlobal(
-      "WebSocket",
+    const WsCtor = Object.assign(
       vi.fn(function WebSocket() {
         lastWs = new MockWebSocket();
         return lastWs;
       }),
+      { OPEN: MockWebSocket.OPEN, CLOSED: MockWebSocket.CLOSED },
     );
+    vi.stubGlobal("WebSocket", WsCtor);
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
       cb(0);
       return 1;

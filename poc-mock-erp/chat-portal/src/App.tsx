@@ -6,13 +6,15 @@ import { TopBar } from "./components/TopBar";
 import { Composer } from "./components/Composer";
 import { useChatSession } from "./hooks/useChatSession";
 import { useAudioRecorder } from "./hooks/useAudioRecorder";
+import { useAsrEngine } from "./hooks/useAsrEngine";
 import { useKeyboardViewport } from "./hooks/useKeyboardViewport";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { useState, useCallback } from "react";
 
 export default function App() {
   const chat = useChatSession();
-  const voice = useAudioRecorder();
+  const { engine, setEngine } = useAsrEngine();
+  const voice = useAudioRecorder(engine);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
@@ -90,6 +92,9 @@ export default function App() {
             mode={chat.mode}
             onMenuToggle={toggleSidebar}
             isSidebarOpen={sidebarOpen}
+            asrEngine={engine}
+            onAsrEngineChange={setEngine}
+            recordingDisabled={voice.status === "recording" || voice.status === "requesting"}
           />
         )}
 
