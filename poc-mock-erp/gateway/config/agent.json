@@ -14,20 +14,17 @@
     },
     "shipment": {
       "name": "智能发货申请单生成",
-      "agentSn": "agent-5461ad39b66f499fa7e0a56",
-      "version": "V1.0.7",
+      "agentSn": "agent-8cd56dd426054d16b9cc8c6",
       "description": "提货函/文字识别，匹配待发货订单，生成发货申请单",
       "inputKey": "input",
       "fileInputKey": "file",
       "imageInputKey": "image",
       "acceptsFile": true,
-      "placeholder": "粘贴提货函内容，或上传提货函图片/文档（客户、车牌、数量、提货日期）",
-      "versionSn": "version-e138155096114ea6bdc382f"
+      "placeholder": "粘贴提货函内容，或上传提货函图片/文档（客户、车牌、数量、提货日期）"
     },
     "contract_review": {
       "name": "合同附件智能评审",
-      "agentSn": "agent-e7a64d03635e436a90bc682",
-      "version": "V1.0.5",
+      "agentSn": "agent-80833e575caa4298ac147e5",
       "description": "上传合同附件，与 ERP 订单比对，输出风险评审",
       "inputKey": "input",
       "fileInputKey": "file",

@@ -24,7 +24,7 @@ export function dispatchAsrConnection(clientWs, req, deps) {
     loadHotwords,
   } = deps;
 
-  const engine = parseAsrEngine(req?.url) || asrConfig.defaultEngine || "funasr";
+  const engine = parseAsrEngine(req?.url) || asrConfig.defaultEngine || "qwen";
 
   if (engine === "qwen") {
     if (!asrConfig.apiKey) {

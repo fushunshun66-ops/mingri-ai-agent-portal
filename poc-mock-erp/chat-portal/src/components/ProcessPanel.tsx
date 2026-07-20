@@ -27,10 +27,10 @@ function stepName(t: TraceStep): string {
 export function ProcessPanel({
   traces,
   streaming,
-  seconds,
 }: {
   traces: TraceStep[];
   streaming: boolean;
+  /** 保留兼容；耗时展示已关闭 */
   seconds?: number;
 }) {
   // 流式中默认展开，逐步亮起；完成后默认收起，可点开回看
@@ -41,7 +41,6 @@ export function ProcessPanel({
 
   const last = traces[traces.length - 1];
   const stepCount = traces.length;
-  const durationText = seconds ? `${seconds} 秒` : "";
 
   const barText = streaming
     ? last
@@ -62,11 +61,13 @@ export function ProcessPanel({
         <span className="process-bar-text">{barText}</span>
         {streaming && last && stepName(last) && <span className="process-bar-node">· {stepName(last)}</span>}
         <span className="process-spacer" />
-        {durationText && (
+        {/* 耗时展示已关闭
+        {seconds ? (
           <span key={seconds} className="process-duration">
-            {durationText}
+            {seconds} 秒
           </span>
-        )}
+        ) : null}
+        */}
         <span className={`process-chevron ${open ? "up" : ""}`}>⌄</span>
       </button>
 

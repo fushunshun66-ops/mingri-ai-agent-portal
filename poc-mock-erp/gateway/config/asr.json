@@ -1,5 +1,5 @@
 {
-  "defaultEngine": "funasr",
+  "defaultEngine": "qwen",
   "qwen": {
     "model": "qwen3-asr-flash-realtime",
     "endpoint": "wss://dashscope.aliyuncs.com/api-ws/v1/realtime",

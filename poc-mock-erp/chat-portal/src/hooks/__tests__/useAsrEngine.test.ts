@@ -11,9 +11,9 @@ describe("useAsrEngine", () => {
     localStorage.clear();
   });
 
-  it("默认引擎为 funasr", () => {
+  it("默认引擎为 qwen", () => {
     const { result } = renderHook(() => useAsrEngine());
-    expect(result.current.engine).toBe("funasr");
+    expect(result.current.engine).toBe("qwen");
   });
 
   it("切换到 qwen 后 engine 更新", () => {
@@ -38,10 +38,10 @@ describe("useAsrEngine", () => {
     expect(result.current.engine).toBe("qwen");
   });
 
-  it("localStorage 非法值回退 funasr", () => {
+  it("localStorage 非法值回退 qwen", () => {
     localStorage.setItem("asrEngine", "invalid");
     const { result } = renderHook(() => useAsrEngine());
-    expect(result.current.engine).toBe("funasr");
+    expect(result.current.engine).toBe("qwen");
   });
 
   it("可切回 funasr", () => {

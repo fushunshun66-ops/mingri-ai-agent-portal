@@ -18,7 +18,7 @@ describe("loadAsrConfig", () => {
   it("从 asr.json 加载 defaultEngine / qwen 非敏感字段", () => {
     delete process.env.DASHSCOPE_API_KEY;
     const cfg = loadAsrConfig();
-    expect(cfg.defaultEngine).toBe("funasr");
+    expect(cfg.defaultEngine).toBe("qwen");
     expect(cfg.qwen.model).toBe("qwen3-asr-flash-realtime");
     expect(cfg.qwen.endpoint).toContain("dashscope.aliyuncs.com");
     expect(cfg.qwen.language).toBe("zh");

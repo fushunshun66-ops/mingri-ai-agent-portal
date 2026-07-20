@@ -6,7 +6,7 @@ const VALID: AsrEngine[] = ["funasr", "qwen"];
 
 function readFromStorage(): AsrEngine {
   const raw = localStorage.getItem(STORAGE_KEY);
-  return VALID.includes(raw as AsrEngine) ? (raw as AsrEngine) : "funasr";
+  return VALID.includes(raw as AsrEngine) ? (raw as AsrEngine) : "qwen";
 }
 
 export function useAsrEngine(): { engine: AsrEngine; setEngine: (e: AsrEngine) => void } {

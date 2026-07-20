@@ -20,10 +20,10 @@ describe("buildAsrWsUrl", () => {
     );
   });
 
-  it("非法 engine 回退 funasr", () => {
+  it("非法 engine 回退 qwen", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(buildAsrWsUrl("unknown" as any)).toBe(
-      "ws://127.0.0.1:3001/api/asr/stream?engine=funasr",
+      "ws://127.0.0.1:3001/api/asr/stream?engine=qwen",
     );
   });
 
